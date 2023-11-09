@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Nathan Vos",
+  "classifications": [
+    "Common",
+    "Console"
+  ],
+  "identity": "AoCTemplate.Console",
+  "name": "AoC Console Application",
+  "shortName": "aoc",
+  "sourceName": "AoCTemplate",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "rename": {
+        "_sourceName_demo.txt": "sourceName_demo.txt"
+      }
+    }
+  ]
+}
