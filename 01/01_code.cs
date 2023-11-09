@@ -29,11 +29,11 @@ Array.Sort(calsArray);
 Array.Reverse(calsArray);
 
 // Deel 1 
-Console.WriteLine(Convert.ToString(calsArray[0]));
+Console.WriteLine(calsArray[0]);
 
 // Deel 2
 int top3sum = calsArray[0..3].Sum();
-Console.WriteLine(Convert.ToString(top3sum));
+Console.WriteLine(top3sum);
 
 // wait for input before exiting
 Console.WriteLine("Press enter to finish");
