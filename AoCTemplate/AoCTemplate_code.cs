@@ -3,7 +3,7 @@
 
     public static void Main(string[] args)
     {
-        string file = 'AoCTemplate_demo.txt';
+        string file = "AoCTemplate_demo.txt";
         if (args.Length == 0) {
             Console.WriteLine("No input file specified, running demo input: AoCTemplate_demo.txt");
         } else {
