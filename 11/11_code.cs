@@ -1,11 +1,11 @@
 ﻿public class Monkey
 {
-    public List<int> Items { get; set; }
-    public Func<int, int> Operation { get; set; }
-    public Func<int, int> Test { get; }
-    public int itemsInspected { get; set; }
+    public List<float> Items { get; set; }
+    public Func<float, float> Operation { get; set; }
+    public Func<float, int> Test { get; }
+    public float itemsInspected { get; set; }
 
-    public Monkey(List<int> items, Func<int, int> operation, Func<int, int> test)
+    public Monkey(List<float> items, Func<float, float> operation, Func<float, int> test)
     {
         Items = items;
         Operation = operation;
@@ -13,16 +13,12 @@
         itemsInspected = 0;
     }
 
-    public void inspectItems()
+    public void inspectItems(bool reduceWorry = true)
     {
         for (int i = 0; i < Items.Count; i++)
         {
-            // inspect item
-            int afterInspection = Operation(Items[i]);
-            // recuce worry, divide by 3 and round down to nearest integer
-            int reducedWorry = afterInspection / 3;
-            // update item
-            Items[i] = reducedWorry;
+            float worry = Operation(Items[i]);
+            Items[i] = reduceWorry ? (float)Math.Floor(worry / 3) : worry;
         }
         itemsInspected += Items.Count;
     }
@@ -31,7 +27,7 @@
     {
         for (int i = 0; i < Items.Count; i++)
         {
-            int item = Items[i];
+            float item = Items[i];
             int newMonkey = Test(item);
             //add item to other monkey
             monkeys[newMonkey].Items.Add(item);
@@ -55,12 +51,12 @@ public class Program
     // initialize variables
     static string? line;
     static int monkeyCount;
-    static List<int> items = new List<int>();
-    static Func<int, int> operation = (item => item);
+    static List<float> items = new List<float>();
+    static Func<float, float> operation = (item => item);
     static int divisor;
     static int onTrue;
     static int onFalse;
-    static Func<int, int> test = (item => item);
+    static Func<float, int> test = (item => 0);
 
     public static void Main(string[] args)
     {
@@ -87,7 +83,7 @@ public class Program
                     break;
                 case string s when s.StartsWith("  Starting items:"):
                     var temp = line.Split("  Starting items: ")[1].Split(", ").ToList();
-                    items = temp.Select(x => int.Parse(x)).ToList();
+                    items = temp.Select(x => float.Parse(x)).ToList();
                     break;
                 case string s when s.StartsWith("  Operation:"):
                     var operationString = line.Split("  Operation: ")[1];
@@ -100,20 +96,10 @@ public class Program
                                 ? (item => item * item)
                                 : (item => item * int.Parse(operationList[2]));
                             break;
-                        case "-":
-                            operation = operationList[2] == "old"
-                                ? (item => item - item)
-                                : (item => item - int.Parse(operationList[2]));
-                            break;
                         case "+":
                             operation = operationList[2] == "old"
                                 ? (item => item + item)
                                 : (item => item + int.Parse(operationList[2]));
-                            break;
-                        case "/":
-                            operation = operationList[2] == "old"
-                                ? (item => item / item)
-                                : (item => item / int.Parse(operationList[2]));
                             break;
                         default:
                             break;
@@ -144,9 +130,11 @@ public class Program
                     break;
             }
         }
+        
+        reader.Close();
+
         // last monkey
         monkeys.Add(new Monkey(items, operation, test));
-        reader.Close();
 
         // Part 1
         int rounds = 20;
@@ -167,11 +155,14 @@ public class Program
             monkeys[m].printItems(m);
         }
 
-        List<Monkey>sorted = monkeys.OrderByDescending(x => x.itemsInspected).ToList();
-        int monkeyBusiness = sorted[0].itemsInspected * sorted[1].itemsInspected; 
+        List<Monkey> sorted = monkeys.OrderByDescending(x => x.itemsInspected).ToList();
+        float monkeyBusiness = sorted[0].itemsInspected * sorted[1].itemsInspected;
 
         Console.WriteLine("Total monkeybusiness part 1: {0}", monkeyBusiness);
-        // Console.WriteLine("Total score part 2: {0}",);
+
+        //part 2
+        // todo de items worden te groot om goed te kunnen verwerken, dus ik moet een andere manier vinden om de items te verwerken
+
 
 
         // wait for input before exiting
