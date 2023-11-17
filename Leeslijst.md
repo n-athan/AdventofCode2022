@@ -30,3 +30,32 @@ public class Program
 The Func<int, int, int> delegate type in C# represents a function that takes two int parameters and returns an int. The last type parameter is always the return type, and the preceding type parameters are the input types.
 
 If you see a Func with three int type parameters like Func<int, int, int, int>, it represents a function that takes three int parameters and returns an int. The number of type parameters in Func minus one gives you the number of input parameters to the function, as the last type parameter is always the return type.
+
+## Difference break and continue
+In programming, break and continue are two control flow statements that are used in loops.
+
+break: This statement is used to completely exit the loop prematurely. It stops the execution of the loop immediately, and program control resumes at the next statement following the loop.
+
+continue: This statement is used to skip the rest of the current loop iteration and immediately start the next iteration. It stops the execution of the current iteration and jumps to the next iteration of the loop.
+
+Here's an example in C# to illustrate the difference:
+```c#
+for (int i = 0; i < 10; i++)
+{
+    if (i == 5)
+    {
+        break;  // This will exit the loop completely. The loop will not iterate for i = 6, 7, 8, 9.
+    }
+    Console.WriteLine(i);
+}
+
+for (int i = 0; i < 10; i++)
+{
+    if (i == 5)
+    {
+        continue;  // This will skip the rest of the loop for i = 5 and immediately continue with i = 6.
+    }
+    Console.WriteLine(i);
+}
+```
+In the first loop, the break statement causes the loop to exit completely when i equals 5. In the second loop, the continue statement causes the loop to skip the rest of the iteration when i equals 5 and immediately continue with the next iteration.
