@@ -23,7 +23,7 @@
         {
             // check if the location can be reached
             // neighbour can be reached, when elevation is lower, equeal or one higher than current location
-            Location? neighbour = locations.Find(loc => loc.x == _x && loc.y == _y && loc.elevation - 1 <= this.elevation);
+            Location? neighbour = locations.Find(loc => loc.x == _x && loc.y == _y && loc.elevation >= this.elevation - 1);
             if (neighbour != null)
             {
                 this.neighbours.Add(neighbour);
@@ -46,13 +46,19 @@ public class Program
     public static void Main(string[] args)
     {
         string file = "12_demo.txt";
+        int part = 1;
         if (args.Length == 0)
         {
             Console.WriteLine("No input file specified, running demo input: 12_demo.txt");
         }
-        else
+        else if (args.Length == 1)
         {
-            file = args[0];
+            part = int.Parse(args[0]);
+        }
+        else if (args.Length == 2)
+        {
+            part = int.Parse(args[0]);
+            file = args[1];
         }
         //initialize reader to read the input file.
         StreamReader reader = new StreamReader(file);
@@ -97,20 +103,28 @@ public class Program
 
         // https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Algorithm
 
-        // select the start location and set distance to 0
-        locations.Find(x => x.x == start.x && x.y == start.y).distance = 0;
+        // for part 2 we go backwards. So from end to start. Shortest path stays shortest path.
+        // select the end location and set distance to 0
+        Location current = locations.Find(x => x.x == end.x && x.y == end.y);
+        current.distance = 0;
 
-        Location current = locations[0];
-        while (!(current.x == end.x && current.y == end.y))
+        List<Location> candidates = new List<Location>();
+        if (part == 2)
+        { 
+            // limit set of possible canditates with elevation 'a' to those that have a neighbour that is 'b'. 
+           candidates = locations.Where(loc => loc.elevation == 'a' && loc.neighbours.Any(nb => nb.elevation == 'b')).ToList();
+        } else
+        {
+            // limit set of candidates to start location
+            candidates = locations.Where(loc => loc.x == start.x && loc.y == start.y).ToList();
+        }
+        Console.WriteLine("Candidates: {0}", candidates.Count);
+
+        while (!(candidates.Contains(current)))
         {
             // select the unvisited location with the smallest distance
             current = locations.Find(loc => loc.visited == false && loc.distance == locations.Where(loc => loc.visited == false).Min(loc => loc.distance));
 
-            // if the current location is the end location, break the loop. We found the shortest path
-            if (current.x == end.x && current.y == end.y)
-            {
-                break;
-            }
             // if the distance is 1000, there is no path, this means that the current location is not connected to the start location
             if (current.distance == 1000)
             {
@@ -129,12 +143,8 @@ public class Program
             current.visited = true;
         }
 
-        // part 1 
-        int shortestPath = locations.Find(x => x.x == end.x && x.y == end.y).distance;
-
-        Console.WriteLine("Total score part 1: {0}", shortestPath);
-        // Console.WriteLine("Total score part 2: {0}",);
-
+        int shortestPath = locations.Find(x => x.x == current.x && x.y == current.y).distance;
+        Console.WriteLine("Length shortest path: {0}", shortestPath);
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
