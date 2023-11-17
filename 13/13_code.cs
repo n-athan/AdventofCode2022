@@ -9,33 +9,26 @@
         List<object> result = new List<object>();
         // exclude first and last character, they are always [ ]
         line = line.Substring(1, line.Length - 2);
-        Console.WriteLine("input trimmed: {0}", line);
         for (int i = 0; i < line.Length; i++)
         {
-            Console.WriteLine("first char: {0}", line.Substring(i, 1));
             if (line[i] == '[')
             {
-                // find closing bracket
-                // Console.WriteLine(line.Substring(i, line.IndexOf("]") - i));
-                // Console.WriteLine("first char: {0}", line.Substring(i));
-                int j = i;
-                int matchingBracketIndex = line.Substring(i).IndexOf("]")+i;
-                // log j an dmatchingBracketIndex
-                Console.WriteLine("start j: {0}, matchingBracketIndex: {1}", j, matchingBracketIndex);
-                while (j > 0)
+                int start = i;
+                int count = 1;
+                while (count > 0)
                 {
-                    j = line.Substring(j, matchingBracketIndex - j).IndexOf("[");
-                    if (matchingBracketIndex < line.Length - 1)
+                    i++;
+                    if (line[i] == '[')
                     {
-                        matchingBracketIndex = line.Substring(matchingBracketIndex + 1).IndexOf("]");
+                        count++;
                     }
-                    Console.WriteLine("temp j: {0}, matchingBracketIndex: {1}", j, matchingBracketIndex);
-
+                    else if (line[i] == ']')
+                    {
+                        count--;
+                    }
                 }
-                // call ParseLine on the Substring
-                Console.WriteLine("Running on Substring: {0}", line.Substring(i, matchingBracketIndex - i + 1));
-                result.Add(ParseLine(line.Substring(i, matchingBracketIndex - i + 1)));
-                i = matchingBracketIndex;
+                // Console.WriteLine("Running on Substring: {0}", line.Substring(start,i-start+1));
+                result.Add(ParseLine(line.Substring(start,i-start+1)));
             }
             else if (line[i] == ',' || line[i] == ']')
             {
@@ -44,7 +37,6 @@
             else
             {
                 // add the number to the list
-                Console.WriteLine("added: {0}", line[i]);
                 result.Add(line[i]);
             }
         }
@@ -82,10 +74,10 @@
         reader.Close();
 
         // show the number of items in each element of parsedLine
-        foreach (List<object> item in parsedLine)
-        {
-            Console.WriteLine(item.Count);
-        }
+        // foreach (List<object> item in parsedLine)
+        // {
+        //     Console.WriteLine(item.Count);
+        // }
 
         // Console.WriteLine("Total score part 1: {0}",);
         // Console.WriteLine("Total score part 2: {0}",);
