@@ -1,7 +1,32 @@
 ﻿public class Program
 {
 
-    // public static bool ComparePair(int)
+    public static bool ComparePair(List<object> a, List<object> b)
+    {
+        Console.WriteLine(a.Count);
+        if (a.Count > b.Count)
+        {
+            // Console.WriteLine("a: {0}, b {1}", a.Count , b.Count);
+            return false;
+        }
+        else
+        {
+            // Console.WriteLine("a: {0}, b {1}", a.Count , b.Count);
+            // return true;
+            for (int i = 0; i < a.Count; i++)
+            {
+                // TODO 
+                // if (a[i] is int && ) {
+                //     List<object> _a new
+                // }
+                Console.WriteLine(a);
+                List<object> _a = a[i] as List<object>;
+                List<object> _b = b[i] as List<object>;
+                return ComparePair(_a, _b);
+            }
+        }
+        return true;
+    }
 
     // recursive function to change the input string to a List of ints/lists. 
     public static List<object> ParseLine(string line)
@@ -11,6 +36,7 @@
         line = line.Substring(1, line.Length - 2);
         for (int i = 0; i < line.Length; i++)
         {
+            // get nested array. match [ with ]
             if (line[i] == '[')
             {
                 int start = i;
@@ -28,7 +54,7 @@
                     }
                 }
                 // Console.WriteLine("Running on Substring: {0}", line.Substring(start,i-start+1));
-                result.Add(ParseLine(line.Substring(start,i-start+1)));
+                result.Add(ParseLine(line.Substring(start, i - start + 1)));
             }
             else if (line[i] == ',' || line[i] == ']')
             {
@@ -37,6 +63,7 @@
             else
             {
                 // add the number to the list
+                // todo as int. 
                 result.Add(line[i]);
             }
         }
@@ -59,7 +86,7 @@
         string? line;
 
         // initialize variables
-        List<object> parsedLine = new List<object>();
+        List<List<object>> parsedLines = new List<List<object>>();
 
         // read the input file
         while ((line = reader.ReadLine()) != null)
@@ -69,15 +96,17 @@
                 continue;
             }
             // parse the line
-            parsedLine.Add(ParseLine(line));
+            parsedLines.Add(ParseLine(line));
         }
         reader.Close();
 
-        // show the number of items in each element of parsedLine
-        // foreach (List<object> item in parsedLine)
-        // {
-        //     Console.WriteLine(item.Count);
-        // }
+        // compare parsedLines pairwise
+        for (int i = 0; i < parsedLines.Count - 1; i += 2)
+        {
+            bool result = ComparePair(parsedLines[i], parsedLines[i + 1]);
+            //log
+            Console.WriteLine(result);
+        }
 
         // Console.WriteLine("Total score part 1: {0}",);
         // Console.WriteLine("Total score part 2: {0}",);
