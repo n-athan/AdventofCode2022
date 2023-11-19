@@ -16,24 +16,41 @@
 
 public class Program
 {
-    public static bool ComparePair(Packet a, Packet b)
+    public static int ComparePair(Packet a, Packet b)
     {
         if (a.isInt && b.isInt)
         {
-            return a.value <= b.value;
-        }
-        else if (!a.isInt && !b.isInt)
-        {
-            if (a.list is null || b.list is null || (a.list.Count > b.list.Count))
+            if (a.value == b.value)
             {
-                return false;
+                return 0;
+            }
+            else if (a.value > b.value)
+            {
+                return -1;
             }
             else
             {
-                bool result = true;
-                for (int i = 0; i < a.list.Count; i++)
+                return 1;
+            }
+        }
+        else if (!a.isInt && !b.isInt)
+        {
+            if (a.list is null || b.list is null)
+            {
+                return -1;
+            }
+            else
+            {
+                int result = 0;
+                int i = 0;
+                while (result == 0 && i < a.list.Count)
                 {
-                    result = result && ComparePair(a.list[i], b.list[i]);
+                    if (i == b.list.Count) {
+                        return -1;
+                    } else {
+                        result = ComparePair(a.list[i], b.list[i]);
+                        i++;
+                    }
                 }
                 return result;
             }
@@ -42,7 +59,7 @@ public class Program
         {
             if (b.list is null || b.list.Count != 1)
             {
-                return false;
+                return -1;
             }
             else
             {
@@ -53,7 +70,7 @@ public class Program
         {
             if (a.list is null || a.list.Count != 1)
             {
-                return false;
+                return -1;
             }
             else
             {
@@ -62,7 +79,7 @@ public class Program
         }
         else
         {
-            return false;
+            return 0;
         }
     }
 
@@ -142,10 +159,10 @@ public class Program
         int score = 0;
         for (int i = 0; i < parsedLines.Count - 1; i += 2)
         {
-            bool result = ComparePair(parsedLines[i], parsedLines[i + 1]);
+            int result = ComparePair(parsedLines[i], parsedLines[i + 1]);
             //log
             Console.WriteLine(result);
-            if (result)
+            if (result == 1)
             {
                 score+= (i)/2+1;
                 Console.WriteLine("Index: {0}", (i) / 2 + 1);
