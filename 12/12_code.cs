@@ -105,7 +105,7 @@ public class Program
 
         // for part 2 we go backwards. So from end to start. Shortest path stays shortest path.
         // select the end location and set distance to 0
-        Location current = locations.Find(x => x.x == end.x && x.y == end.y);
+        Location? current = locations.Find(x => x.x == end.x && x.y == end.y);
         current.distance = 0;
 
         List<Location> candidates = new List<Location>();

@@ -1,37 +1,75 @@
-﻿public class Program
-{
+﻿public class Packet {
+    public bool isInt { get; set; }
+    public int? value { get; set; }
+    public List<Packet>? list { get; set; }
 
-    public static bool ComparePair(List<object> a, List<object> b)
+    public Packet(int _value) {
+        isInt = true;
+        value = _value;
+    }
+
+    public Packet(List<Packet> _list) {
+        isInt = false;
+        list = _list;
+    }
+}
+
+public class Program
+{
+    public static bool ComparePair(Packet a, Packet b)
     {
-        Console.WriteLine(a.Count);
-        if (a.Count > b.Count)
+        if (a.isInt && b.isInt)
         {
-            // Console.WriteLine("a: {0}, b {1}", a.Count , b.Count);
-            return false;
+            return a.value <= b.value;
+        }
+        else if (!a.isInt && !b.isInt)
+        {
+            if (a.list is null || b.list is null || (a.list.Count > b.list.Count))
+            {
+                return false;
+            }
+            else
+            {
+                bool result = true;
+                for (int i = 0; i < a.list.Count; i++)
+                {
+                    result = result && ComparePair(a.list[i], b.list[i]);
+                }
+                return result;
+            }
+        }
+        else if (a.isInt && !b.isInt)
+        {
+            if (b.list is null || b.list.Count != 1)
+            {
+                return false;
+            }
+            else
+            {
+                return ComparePair(a, b.list[0]);
+            }
+        } 
+        else if (!a.isInt && b.isInt)
+        {
+            if (a.list is null || a.list.Count != 1)
+            {
+                return false;
+            }
+            else
+            {
+                return ComparePair(a.list[0], b);
+            }
         }
         else
         {
-            // Console.WriteLine("a: {0}, b {1}", a.Count , b.Count);
-            // return true;
-            for (int i = 0; i < a.Count; i++)
-            {
-                // TODO 
-                // if (a[i] is int && ) {
-                //     List<object> _a new
-                // }
-                Console.WriteLine(a);
-                List<object> _a = a[i] as List<object>;
-                List<object> _b = b[i] as List<object>;
-                return ComparePair(_a, _b);
-            }
+            return false;
         }
-        return true;
     }
 
     // recursive function to change the input string to a List of ints/lists. 
-    public static List<object> ParseLine(string line)
+    public static Packet ParseLine(string line)
     {
-        List<object> result = new List<object>();
+        Packet result = new Packet(new List<Packet>());
         // exclude first and last character, they are always [ ]
         line = line.Substring(1, line.Length - 2);
         for (int i = 0; i < line.Length; i++)
@@ -54,7 +92,7 @@
                     }
                 }
                 // Console.WriteLine("Running on Substring: {0}", line.Substring(start,i-start+1));
-                result.Add(ParseLine(line.Substring(start, i - start + 1)));
+                result.list.Add(ParseLine(line.Substring(start, i - start + 1)));
             }
             else if (line[i] == ',' || line[i] == ']')
             {
@@ -64,7 +102,7 @@
             {
                 // add the number to the list
                 // todo as int. 
-                result.Add(line[i]);
+                result.list.Add(new Packet(int.Parse(line[i].ToString())));
             }
         }
         return result;
@@ -86,7 +124,7 @@
         string? line;
 
         // initialize variables
-        List<List<object>> parsedLines = new List<List<object>>();
+        List<Packet> parsedLines = new List<Packet>();
 
         // read the input file
         while ((line = reader.ReadLine()) != null)
@@ -101,14 +139,20 @@
         reader.Close();
 
         // compare parsedLines pairwise
+        int score = 0;
         for (int i = 0; i < parsedLines.Count - 1; i += 2)
         {
             bool result = ComparePair(parsedLines[i], parsedLines[i + 1]);
             //log
             Console.WriteLine(result);
+            if (result)
+            {
+                score+= (i)/2+1;
+                Console.WriteLine("Index: {0}", (i) / 2 + 1);
+            }
         }
 
-        // Console.WriteLine("Total score part 1: {0}",);
+        Console.WriteLine("Total score part 1: {0}",score);
         // Console.WriteLine("Total score part 2: {0}",);
 
 
