@@ -22,14 +22,17 @@ public class Program
         {
             if (a.value == b.value)
             {
+                //Console.WriteLine("Equal ints {0}, {1}", a.value, b.value);
                 return 0;
             }
             else if (a.value > b.value)
             {
+                //Console.WriteLine("Left greater {0}, {1}", a.value, b.value);
                 return -1;
             }
             else
             {
+                //Console.WriteLine("Right greater {0}, {1}", a.value, b.value);
                 return 1;
             }
         }
@@ -37,6 +40,7 @@ public class Program
         {
             if (a.list is null || b.list is null)
             {
+                //Console.WriteLine("Null list, a b list");
                 return -1;
             }
             else
@@ -46,7 +50,9 @@ public class Program
                 while (result == 0 && i < a.list.Count)
                 {
                     if (i == b.list.Count) {
-                        return -1;
+                        //Console.WriteLine("Left longer");
+                        result = -1;
+                        break;
                     } else {
                         result = ComparePair(a.list[i], b.list[i]);
                         i++;
@@ -57,30 +63,45 @@ public class Program
         }
         else if (a.isInt && !b.isInt)
         {
-            if (b.list is null || b.list.Count != 1)
+            if (b.list is null)
             {
+                //Console.WriteLine("Null list b, a int");
+                return -1;
+            } else if (b.list.Count == 0) 
+            {
+                //Console.WriteLine("Empty list b, a int");
                 return -1;
             }
             else
             {
+                //Console.WriteLine("Left int, right list");
                 return ComparePair(a, b.list[0]);
             }
         } 
         else if (!a.isInt && b.isInt)
         {
-            if (a.list is null || a.list.Count != 1)
+            //Console.WriteLine("a list count {0}", a.list.Count);
+            if (a.list is null)
             {
+                //Console.WriteLine("Null list a, b int");
                 return -1;
             }
-            else
+            else if (a.list.Count == 0) 
             {
+                //Console.WriteLine("Empty list a, b int");
+                return 1;
+            } else
+            {
+                //Console.WriteLine("Left list, right int");
                 return ComparePair(a.list[0], b);
             }
         }
         else
         {
+            //Console.WriteLine("Should not happen");
             return 0;
         }
+        return 1; 
     }
 
     // recursive function to change the input string to a List of ints/lists. 
@@ -160,12 +181,10 @@ public class Program
         for (int i = 0; i < parsedLines.Count - 1; i += 2)
         {
             int result = ComparePair(parsedLines[i], parsedLines[i + 1]);
-            //log
-            Console.WriteLine(result);
-            if (result == 1)
+            // Console.WriteLine("Index: {0}, result {1}", (i) / 2 + 1, result);
+            if (result >= 0)
             {
                 score+= (i)/2+1;
-                Console.WriteLine("Index: {0}", (i) / 2 + 1);
             }
         }
 
