@@ -193,7 +193,6 @@ public class Program
         Console.WriteLine("Total score part 1: {0}",score);
         // Console.WriteLine("Total score part 2: {0}",);
 
-
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
         Console.ReadLine();

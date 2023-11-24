@@ -59,3 +59,8 @@ for (int i = 0; i < 10; i++)
 }
 ```
 In the first loop, the break statement causes the loop to exit completely when i equals 5. In the second loop, the continue statement causes the loop to skip the rest of the iteration when i equals 5 and immediately continue with the next iteration.
+
+# Lijsten met gemixte elementen. 
+Hiervoor is het het makkelijkst om een nieuwe class te maken, die verschillende types elementen kan bevatten. 
+Polymorfisme (subclasses) kan hierbij helpen!
+Voorbeeld: [abstractclass](./abstractclass/abstractclass_code.cs). 
