@@ -1,6 +1,7 @@
 ﻿abstract public class Packet {
     abstract public List<Packet> list { get; set;}
     abstract public int value { get; set;}
+    abstract public string? basestring { get; set;}
 
 }
 
@@ -8,17 +9,23 @@ public class ListPacket : Packet {
     
     public override List<Packet> list { get; set;}
     public override int value { get; set;}
+    public override string? basestring { get; set;}
 
     public ListPacket(List<Packet> list) {
         this.list = list;
+    }
+
+    public ListPacket(List<Packet> list, string basestring) {
+        this.list = list;
+        this.basestring = basestring;
     }
 }
 
 public class IntPacket : Packet {
     
     public override int value { get; set;}
-    
-    public override List<Packet> list { get; set;}
+    public override List<Packet> list { get; set;}    
+    public override string? basestring { get; set;}
 
     public IntPacket(int value) {
         this.value = value;
@@ -114,7 +121,7 @@ public class Program
     // recursive function to change the input string to a List of ints/lists. 
     public static ListPacket ParseLine(string line)
     {
-        ListPacket result = new ListPacket(new List<Packet>());
+        ListPacket result = new ListPacket(new List<Packet>(), line);
         // exclude first and last character, they are always [ ]
         line = line.Substring(1, line.Length - 2);
         for (int i = 0; i < line.Length; i++)
@@ -202,7 +209,29 @@ public class Program
         }
 
         Console.WriteLine("Total score part 1: {0}",score);
-        // Console.WriteLine("Total score part 2: {0}",);
+
+        // part 2
+        // add dividers
+        List<string> extralines = new List<string>(){"[[2]]","[[6]]"};
+        foreach (var l in extralines)
+        {
+            var parsedLine = ParseLine(l);
+            parsedLines.Add(parsedLine);
+        }
+
+        // sorting of all lines
+        parsedLines.Sort((a, b) => ComparePair(a, b));
+        parsedLines.Reverse();
+
+        for (int i = 0; i < parsedLines.Count; i++){
+            Console.WriteLine(parsedLines[i].basestring);
+        }
+        int d2 = parsedLines.IndexOf(parsedLines.Find(x => x.basestring == "[[2]]")) + 1;
+        int d6 = parsedLines.IndexOf(parsedLines.Find(x => x.basestring == "[[6]]")) + 1;
+
+        int decoderkey = d2 * d6;
+
+        Console.WriteLine("Total score part 2: {0}", decoderkey);
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
