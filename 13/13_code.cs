@@ -1,113 +1,109 @@
-﻿public class Packet {
-    public bool isInt { get; set; }
-    public int? value { get; set; }
-    public List<Packet>? list { get; set; }
+﻿abstract public class Packet {
+    abstract public List<Packet> list { get; set;}
+    abstract public int value { get; set;}
 
-    public Packet(int _value) {
-        isInt = true;
-        value = _value;
-    }
+}
 
-    public Packet(List<Packet> _list) {
-        isInt = false;
-        list = _list;
+public class ListPacket : Packet {
+    
+    public override List<Packet> list { get; set;}
+    public override int value { get; set;}
+
+    public ListPacket(List<Packet> list) {
+        this.list = list;
     }
 }
+
+public class IntPacket : Packet {
+    
+    public override int value { get; set;}
+    
+    public override List<Packet> list { get; set;}
+
+    public IntPacket(int value) {
+        this.value = value;
+    }
+}
+
 
 public class Program
 {
     public static int ComparePair(Packet a, Packet b)
     {
-        if (a.isInt && b.isInt)
+        if (typeof(IntPacket) == a.GetType() && typeof(IntPacket) == b.GetType())
         {
+            // Console.WriteLine("Left int {0}, right int {1}", a.value, b.value);
             if (a.value == b.value)
             {
-                //Console.WriteLine("Equal ints {0}, {1}", a.value, b.value);
+                // Console.WriteLine("Equal ints {0}, {1}", a.value, b.value);
                 return 0;
             }
             else if (a.value > b.value)
             {
-                //Console.WriteLine("Left greater {0}, {1}", a.value, b.value);
+                // Console.WriteLine("Left greater {0}, {1}", a.value, b.value);
                 return -1;
             }
             else
             {
-                //Console.WriteLine("Right greater {0}, {1}", a.value, b.value);
+                // Console.WriteLine("Right greater {0}, {1}", a.value, b.value);
                 return 1;
             }
         }
-        else if (!a.isInt && !b.isInt)
+        else if (typeof(ListPacket) == a.GetType() && typeof(ListPacket) == b.GetType())
         {
-            if (a.list is null || b.list is null)
+            // Console.WriteLine("Left list count: {0}, right list count:{1}", a.list.Count, b.list.Count);
+            int result = 0;
+            int i = 0;
+            while (result == 0 && i < a.list.Count)
             {
-                //Console.WriteLine("Null list, a b list");
-                return -1;
-            }
-            else
-            {
-                int result = 0;
-                int i = 0;
-                while (result == 0 && i < a.list.Count)
-                {
-                    if (i == b.list.Count) {
-                        //Console.WriteLine("Left longer");
-                        result = -1;
-                        break;
-                    } else {
-                        result = ComparePair(a.list[i], b.list[i]);
-                        i++;
-                    }
+                if (i == b.list.Count) {
+                    // Console.WriteLine("Left longer");
+                    result = -1;
+                    break;
+                } else {
+                    result = ComparePair(a.list[i], b.list[i]);
+                    i++;
                 }
-                return result;
             }
+            return result;            
         }
-        else if (a.isInt && !b.isInt)
+        else if (a.GetType() != b.GetType())
         {
-            if (b.list is null)
-            {
-                //Console.WriteLine("Null list b, a int");
-                return -1;
-            } else if (b.list.Count == 0) 
-            {
-                //Console.WriteLine("Empty list b, a int");
-                return -1;
-            }
-            else
-            {
-                //Console.WriteLine("Left int, right list");
-                return ComparePair(a, b.list[0]);
-            }
+            if (b.GetType() == typeof(ListPacket)) {
+                if (b.list.Count == 0)
+                {
+                    // Console.WriteLine("Empty list b, a int");
+                    return -1;
+                }
+                else
+                {
+                    // Console.WriteLine("Left int, right list");
+                    return ComparePair(a, b.list[0]);
+                }
+            } else {
+                if (a.list.Count == 0)
+                {
+                    // Console.WriteLine("Empty list a, b int");
+                    return 1;
+                }
+                else
+                {
+                    // Console.WriteLine("Left list, right int");
+                    return ComparePair(a.list[0], b);
+                }
+            }            
         } 
-        else if (!a.isInt && b.isInt)
-        {
-            //Console.WriteLine("a list count {0}", a.list.Count);
-            if (a.list is null)
-            {
-                //Console.WriteLine("Null list a, b int");
-                return -1;
-            }
-            else if (a.list.Count == 0) 
-            {
-                //Console.WriteLine("Empty list a, b int");
-                return 1;
-            } else
-            {
-                //Console.WriteLine("Left list, right int");
-                return ComparePair(a.list[0], b);
-            }
-        }
         else
         {
-            //Console.WriteLine("Should not happen");
+            Console.WriteLine("Should not happen");
             return 0;
         }
-        return 1; 
     }
 
     // recursive function to change the input string to a List of ints/lists. 
-    public static Packet ParseLine(string line)
+    public static ListPacket ParseLine(string line)
     {
-        Packet result = new Packet(new List<Packet>());
+        ListPacket result = new ListPacket(new List<Packet>());
         // exclude first and last character, they are always [ ]
         line = line.Substring(1, line.Length - 2);
         for (int i = 0; i < line.Length; i++)
@@ -129,7 +125,6 @@ public class Program
                         count--;
                     }
                 }
-                // Console.WriteLine("Running on Substring: {0}", line.Substring(start,i-start+1));
                 result.list.Add(ParseLine(line.Substring(start, i - start + 1)));
             }
             else if (line[i] == ',' || line[i] == ']')
@@ -138,9 +133,13 @@ public class Program
             }
             else
             {
-                // add the number to the list
-                // todo as int. 
-                result.list.Add(new Packet(int.Parse(line[i].ToString())));
+                // add the number to the list, can be multidecimal. End is a comma.
+                int start = i;
+                while (i < line.Length && line[i] != ',' && line[i] != ']')
+                {
+                    i++;
+                }           
+                result.list.Add(new IntPacket(int.Parse(line.Substring(start, i - start))));
             }
         }
         return result;
@@ -162,7 +161,7 @@ public class Program
         string? line;
 
         // initialize variables
-        List<Packet> parsedLines = new List<Packet>();
+        List<ListPacket> parsedLines = new List<ListPacket>();
 
         // read the input file
         while ((line = reader.ReadLine()) != null)
@@ -172,9 +171,11 @@ public class Program
                 continue;
             }
             // parse the line
-            parsedLines.Add(ParseLine(line));
+            var parsedLine = ParseLine(line);
+            parsedLines.Add(parsedLine);
         }
         reader.Close();
+        Console.WriteLine("Parsed {0} lines", parsedLines.Count);
 
         // compare parsedLines pairwise
         int score = 0;
@@ -184,6 +185,7 @@ public class Program
             // Console.WriteLine("Index: {0}, result {1}", (i) / 2 + 1, result);
             if (result >= 0)
             {
+                Console.WriteLine("{0}", (i)/2+1);
                 score+= (i)/2+1;
             }
         }
