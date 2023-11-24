@@ -22,6 +22,7 @@ public class IntPacket : Packet {
 
     public IntPacket(int value) {
         this.value = value;
+        this.list = new List<Packet>();
     }
 }
 
@@ -51,7 +52,12 @@ public class Program
         }
         else if (typeof(ListPacket) == a.GetType() && typeof(ListPacket) == b.GetType())
         {
-            // Console.WriteLine("Left list count: {0}, right list count:{1}", a.list.Count, b.list.Count);
+           // Console.WriteLine("Left list count: {0}, right list count:{1}", a.list.Count, b.list.Count);
+            if (a.list.Count == 0)
+                {
+                   // Console.WriteLine("Empty list a, b list");
+                    return 1;
+                }
             int result = 0;
             int i = 0;
             while (result == 0 && i < a.list.Count)
@@ -78,7 +84,12 @@ public class Program
                 else
                 {
                     // Console.WriteLine("Left int, right list");
-                    return ComparePair(a, b.list[0]);
+                     int r = ComparePair(a, b.list[0]);
+                    if (r == 0) {
+                        return 1;
+                    } else {
+                        return r;
+                    }
                 }
             } else {
                 if (a.list.Count == 0)
@@ -89,13 +100,13 @@ public class Program
                 else
                 {
                     // Console.WriteLine("Left list, right int");
-                    return ComparePair(a.list[0], b);
+                    return ComparePair(a.list[0], new ListPacket(new List<Packet>(){b}));
                 }
             }            
         } 
         else
         {
-            Console.WriteLine("Should not happen");
+           // Console.WriteLine("Should not happen");
             return 0;
         }
     }
@@ -185,7 +196,7 @@ public class Program
             // Console.WriteLine("Index: {0}, result {1}", (i) / 2 + 1, result);
             if (result >= 0)
             {
-                Console.WriteLine("{0}", (i)/2+1);
+                // Console.WriteLine("{0}", (i)/2+1);
                 score+= (i)/2+1;
             }
         }
