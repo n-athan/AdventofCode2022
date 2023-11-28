@@ -37,16 +37,17 @@ public class Sand : Material {
         }
     }
 
-    public void Move(List<List<Material>> materials, (int x, int y) position, int left) {
+    public bool Move(List<List<Material>> materials, (int x, int y) position, int left) {
         int _x = position.x;
         int _y = position.y;
 
         if (_y == materials.Count-1) {
-            // the sand is at the bottom, remove it
+            // the sand is at the bottom, remove it (falls forever)
             materials[_y][_x] = new Air();
+            Program.SpawnSand(materials, (501-left,0));
+            // all posible sand is in rest, finished part 1
+            return true;
         } 
-
-        // TODO sand moving out the map.
 
         if (materials[_y+1][_x].passable) {
             // move the sand down
@@ -67,10 +68,15 @@ public class Sand : Material {
                 } else {                    
                     // the sand is in rest
                     inRest = true;
-                    Program.SpawnSand(materials, (500-left,0));
+                    if (_x == 501-left && _y == 0) {
+                        // the sand is in rest at the top, finished part 2
+                        return true;
+                    }
+                    Program.SpawnSand(materials, (501-left,0));
                 }
             }
         }
+        return false;
     }
 }
 
@@ -95,20 +101,19 @@ public class Program
         }
     }
 
-    public static void Update(List<List<Material>> materials, int left) {
+    public static bool Update(List<List<Material>> materials, int left) {
         // update the state of the materials, i.e. the falling sand
-        // foreach (List<Material> row in materials) {
         for (int i = materials.Count-1; i >= 0; i--) {
             for(int j = 0; j < materials[i].Count; j++) {
                 if (materials[i][j].elementName == "Sand") {
                     Sand sand = (Sand)materials[i][j];
                     if (!sand.inRest) {
-                        sand.Move(materials,(j,i),left);
+                        return sand.Move(materials,(j,i),left);
                     }
                 }
             }
         }
-        // SpawnSand(materials, (500-left,0));
+        return false;
     }
 
     public static void SpawnSand(List<List<Material>> materials, (int x, int y) sandhole) {
@@ -119,10 +124,19 @@ public class Program
     public static void Main(string[] args)
     {
         string file = "14_demo.txt";
-        if (args.Length == 0) {
+        int part = 1;
+        if (args.Length == 0)
+        {
             Console.WriteLine("No input file specified, running demo input: 14_demo.txt");
-        } else {
-            file = args[0];
+        }
+        else if (args.Length == 1)
+        {
+            part = int.Parse(args[0]);
+        }
+        else if (args.Length == 2)
+        {
+            part = int.Parse(args[0]);
+            file = args[1];
         }
         //initialize reader to read the input file.
         StreamReader reader = new StreamReader(file);
@@ -146,9 +160,10 @@ public class Program
                     prev = (_x,_y);
                 } 
                 // check if row materials[_y] already exists
-                if (materials.Count < _y) {
+                if (materials.Count <= _y) {
                     for (int i = materials.Count; i <= _y ; i++) {
                         //initialize the rows with 1000 instances of Air
+                        // Console.WriteLine("Adding row {0}",i);
                         List<Material> row = new List<Material>();
                         for (int j = 0; j < 1000; j++ ){
                             row.Add(new Air());
@@ -158,6 +173,7 @@ public class Program
                 }
 
                 // add the location as a Rock.
+                // Console.WriteLine("Adding rock at {0},{1}",_x,_y);
                 materials[_y][_x] = new Rock();
 
                 // add rocks in between the previous and current location
@@ -196,37 +212,57 @@ public class Program
                     right = _x;
                 }
             }
-            // Part 2
-
         }
         reader.Close();
 
+        // add floor for part 2
+        if (part == 2) {
+            // add air layer
+            List<Material> airlayer = new List<Material>();
+            for (int i = 0; i < 1000; i++ ){
+                airlayer.Add(new Air());
+            }
+            materials.Add(airlayer);
+            // add floor
+            List<Material> floor = new List<Material>();
+            for (int i = 0; i < 1000; i++ ){
+                floor.Add(new Rock());
+            }
+            materials.Add(floor);
+
+            // the sand will form a triangle, so the left and right columns are at the same distance from the center. Distance is dependent on the height.
+            left = 500 - (materials.Count-1);
+            right = 500 + (materials.Count-1);
+        }
 
         // remove the last 1000 - right columns
         Console.WriteLine("Left: {0}, Right: {1}",left,right);
         foreach (List<Material> row in materials) {
-            row.RemoveRange(right+1,row.Count-(right+1));
+            row.RemoveRange(right+2,row.Count-(right+2));
         }
         // remove the first 1000 - left columns
         foreach (List<Material> row in materials) {
-            row.RemoveRange(0,left);
+            row.RemoveRange(0,left-1);
         }
 
 
-        SpawnSand(materials, (500-left,0));
+        SpawnSand(materials, (501-left,0));
 
-        // draw the state (animated)
-        // todo stop in end state.
-        for (int i = 0; i < 200; i++)
+        bool finished = false;
+        while (!finished)
         {
-            Update(materials, left);
-            Console.Clear(); // Clear the console
-            drawState(materials);
-            System.Threading.Thread.Sleep(50); // Wait for half a second
+            finished = Update(materials, left);
+            // draw the state (animated)
+            if (file == "14_demo.txt") {
+                Console.Clear(); // Clear the console
+                drawState(materials);
+                System.Threading.Thread.Sleep(50); // Wait for half a second
+            }
         }
 
-        // Console.WriteLine("Total score part 1: {0}",);
-        // Console.WriteLine("Total score part 2: {0}",);
+        int sandInRest = materials.Sum(row => row.Count(material => material.elementName == "Sand" && material.inRest));
+
+        Console.WriteLine("Total score: {0}", sandInRest);
 
 
         // wait for input before exiting
