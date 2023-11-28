@@ -121,6 +121,17 @@ public class Program
         materials[sandhole.y][sandhole.x] = new Sand();
     }
 
+    public static void CleanSides(List<List<Material>> materials, int left, int right) {
+        // remove the last 1000 - right columns
+        foreach (List<Material> row in materials) {
+            row.RemoveRange(right+2,row.Count-(right+2));
+        }
+        // remove the first 1000 - left columns
+        foreach (List<Material> row in materials) {
+            row.RemoveRange(0,left-1);
+        }
+    }
+
     public static void Main(string[] args)
     {
         string file = "14_demo.txt";
@@ -215,55 +226,83 @@ public class Program
         }
         reader.Close();
 
-        // add floor for part 2
+        if (part == 1){
+            Console.WriteLine("Left: {0}, Right: {1}, materials count: {2}", left, right, materials.Count);
+           CleanSides(materials, left, right);
+
+            SpawnSand(materials, (501-left,0));
+
+            bool finished = false;
+            while (!finished)
+            {
+                finished = Update(materials, left);
+                // draw the state (animated)
+                if (file == "14_demo.txt") {
+                    Console.Clear(); // Clear the console
+                    drawState(materials);
+                    System.Threading.Thread.Sleep(50); // Wait for half a second
+                }
+            }
+
+            int sandInRest = materials.Sum(row => row.Count(material => material.elementName == "Sand" && material.inRest));
+
+            Console.WriteLine("Total score part 1: {0}", sandInRest);
+        }
+
         if (part == 2) {
-            // add air layer
+        // add air layer
             List<Material> airlayer = new List<Material>();
             for (int i = 0; i < 1000; i++ ){
                 airlayer.Add(new Air());
             }
             materials.Add(airlayer);
-            // add floor
-            List<Material> floor = new List<Material>();
-            for (int i = 0; i < 1000; i++ ){
-                floor.Add(new Rock());
+            // in the triangle the sand will form. subtract all the positions with 3 rocks above it.
+            int n = materials.Count-1;
+            int rocks = materials.Sum(row => row.Count(material => material.elementName == "Rock"));
+            int max_score = (n+1) * (n + 1) - rocks;
+            Sand s = new Sand();
+            s.inRest = true;
+            materials[0][500] = s;
+
+            for (int i = 1; i < materials.Count; i++) {
+                // if it fits in the triangle
+                for (int j = 500-i; j <= 500 + i; j++) {
+                    if (materials[i][j].elementName == "Air") {
+                        // left edge
+                        if (j == 500-i &&
+                            materials[i-1][j].elementName == "Rock" && 
+                            materials[i-1][j+1].elementName == "Rock") {
+                                materials[i][j] = new Rock(); // add a rock, so the check on the next line will work. Would actually be air, but it doesn't matter.
+                                max_score--;                        
+                        } 
+                        //right edge
+                        else if (j == 500+i &&
+                            materials[i-1][j].elementName == "Rock" && 
+                            materials[i-1][j-1].elementName == "Rock") {
+                                materials[i][j] = new Rock();
+                                max_score--;
+                        } 
+                        // middle 
+                        else if (materials[i-1][j].elementName == "Rock" &&
+                            materials[i-1][j-1].elementName == "Rock" && 
+                            materials[i-1][j+1].elementName == "Rock") {
+                                materials[i][j] = new Rock();
+                                max_score--;
+                        } else {
+                            materials[i][j] = s;
+                        }
+                    } 
+                }
             }
-            materials.Add(floor);
-
-            // the sand will form a triangle, so the left and right columns are at the same distance from the center. Distance is dependent on the height.
-            left = 500 - (materials.Count-1);
-            right = 500 + (materials.Count-1);
-        }
-
-        // remove the last 1000 - right columns
-        Console.WriteLine("Left: {0}, Right: {1}",left,right);
-        foreach (List<Material> row in materials) {
-            row.RemoveRange(right+2,row.Count-(right+2));
-        }
-        // remove the first 1000 - left columns
-        foreach (List<Material> row in materials) {
-            row.RemoveRange(0,left-1);
-        }
-
-
-        SpawnSand(materials, (501-left,0));
-
-        bool finished = false;
-        while (!finished)
-        {
-            finished = Update(materials, left);
-            // draw the state (animated)
-            if (file == "14_demo.txt") {
-                Console.Clear(); // Clear the console
+            if (file == "14_demo.txt") {                
+                // the sand will form a triangle, so the left and right columns are at the same distance from the center. Distance is dependent on the height.
+                left = 500 - (materials.Count-1);
+                right = 500 + (materials.Count-1);
+                CleanSides(materials, left, right);
                 drawState(materials);
-                System.Threading.Thread.Sleep(50); // Wait for half a second
             }
+            Console.WriteLine("Total score part 2: {0}", max_score);
         }
-
-        int sandInRest = materials.Sum(row => row.Count(material => material.elementName == "Sand" && material.inRest));
-
-        Console.WriteLine("Total score: {0}", sandInRest);
-
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
