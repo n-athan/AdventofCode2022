@@ -1,32 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 
-public class Range {
-    public int start {get; set;}
-    public int end {get; set;}
-
-    public Range(int start, int end) {
-        this.start = start;
-        this.end = end;
-    }
-
-    public bool isInRange(int value) {
-        return value >= start && value <= end;
-    }
-
-    public bool isInRange(Range range) {
-        return isInRange(range.start) || isInRange(range.end);
-    }
-
-    public void Extend(Range range) {
-        if (range.start < start) {
-            start = range.start;
-        }
-        if (range.end > end) {
-            end = range.end;
-        }
-    }
-}
-
 public class Signal {
     public (int x, int y) position {get; set;}
     public (int x, int y) beacon {get; set;}
@@ -55,7 +28,7 @@ public class Program
 
         // initialize variables
         string? line;
-        List<List<Range>> map = new List<List<Range>>();
+        List<List<string>> map = new List<List<string>>();
         List<Signal> signals = new List<Signal>();
 
         // read the input file
@@ -84,55 +57,46 @@ public class Program
         // initialize the map with the right amount of rows. 
         // map[0] is the row with y = minY
         for (int y = minY; y <= maxY; y++) {
-            List<Range> row = new List<Range>();
+            List<string> row = new List<string>();
+            for (int x = minX; x <= maxX; x++) {
+                row.Add(".");
+            }
             map.Add(row);
         }
 
-        // map[10].Add(new Range(minX, maxX));
         // add the signalranges to the map
         foreach (Signal s in signals){
             int y = s.position.y;
-            int x = s.position.x;
+            int x = s.position.x-minX;
             for (int i = y-s.distance; i <= y+s.distance; i++) {
                 int offset = s.distance - Math.Abs(i-y);
-                map[i-minY].Add(new Range(x-offset, x+offset));
+                for (int j = x-offset; j <= x+offset; j++) {
+                    map[i-minY][j] = "#";
+                }
             }
         }
 
-        // merge overlapping ranges
-        foreach (List<Range> row in map) {
-            for (int i = 0; i < row.Count; i++) {
-                for (int j = i+1; j < row.Count; j++) {
-                    if (row[i].isInRange(row[j])) {
-                        row[i].Extend(row[j]);
-                        row.RemoveAt(j);
-                        j--;
-                    }
-                }
-            }
+        // add the sensors and beacons to the map
+        foreach (Signal s in signals){
+            map[s.position.y-minY][s.position.x-minX] = "S";
+            map[s.beacon.y-minY][s.beacon.x-minX] = "B";
         }
 
         //draw the map
-        foreach (List<Range> row in map) {
-            for (int x = minX; x <= maxX; x++) {
-                // check if the point is in any range in the row
-                bool inRange = false;
-                foreach (Range range in row) {
-                    if (range.isInRange(x)) {
-                        inRange = true;
-                        break;
-                    }
+        if (file == "15_demo.txt") {
+            foreach (List<string> row in map) {
+                foreach (string sign in row) {                
+                    Console.Write(sign);
                 }
-                if (inRange) {
-                    Console.Write("#");
-                } else {
-                    Console.Write(".");
-                }
+                Console.WriteLine();
             }
-            Console.WriteLine();
         }
 
-        // Console.WriteLine("Total score part 1: {0}",);
+        // count the number of points in the specified row that are in the signalranges
+        int index = file == "15_demo.txt" ? 10-minY : 2000000-minY;
+        int count = map[index].Count(s => s == "#");
+
+        Console.WriteLine("Total score part 1: {0}", count);
         // Console.WriteLine("Total score part 2: {0}",);
 
 
