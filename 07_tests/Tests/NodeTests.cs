@@ -1,17 +1,15 @@
-namespace Tests;
-
 public class NodeTests
 {
     [Test]
     public void TestParse()
     {
-        string file = "..\07_demo.txt";
+        string file = @"..\..\..\..\Source\07_demo.txt";
 
-        Node root = Node.Parse(file);
-        
+        Node root = Program.ParseInputFile(file);
+
         // Test parsing of demo file
 
-        // root node is a dir woth 4 children
+        // root node is a dir with 4 children
         Assert.That(root.Name, Is.EqualTo("/"));
         Assert.That(root.Children.Count, Is.EqualTo(4));
 
@@ -29,8 +27,8 @@ public class NodeTests
     [Test]
     public void TestSize()
     {
-        string file = "..\07_demo.txt";
-        Node root = Node.Parse(file);
+        string file = @"..\..\..\..\Source\07_demo.txt";
+        Node root = Program.ParseInputFile(file);
         Node.AnalyzeLeaves(root); 
 
         // Part 1
@@ -42,6 +40,6 @@ public class NodeTests
         int spaceNeeded = 30000000 - freeSpace;
         List<Node> dirs = Node.GetDirectoriesOfSize(root, spaceNeeded);
         Node smallestDir = dirs.OrderBy(node => node.Size).First();
-        Assert.That(smallestDir.Size, Is.EqualTo("24933642"));
+        Assert.That(smallestDir.Size, Is.EqualTo(24933642));
     }
 }
