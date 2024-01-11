@@ -103,7 +103,6 @@ public class Program
                 }
             }
         }
-        
 
         Console.WriteLine("Total visible trees part 1: {0}", visibleTrees);
         Console.WriteLine("Total score part 2: {0}", highestScenicScore);
