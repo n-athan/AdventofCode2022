@@ -88,11 +88,8 @@
 
 public class Program
 {
-    public static List<string[]> readInput(string file)
+    public static List<string[]> readInput(string[] lines)
     {
-        // read the input file
-        string[] lines = File.ReadAllLines(file);
-
         List<string[]> instructions = new List<string[]>();
 
         // read the input file and fill the treeGrid.
@@ -120,7 +117,8 @@ public class Program
         Knot[] rope2 = Knot.makeRope(10);
 
         // read the input file
-        List<string[]> instructions = readInput(file);
+        string[] lines = File.ReadAllLines(file);
+        List<string[]> instructions = readInput(lines);
 
         foreach (string[] instruction in instructions)
         {            
