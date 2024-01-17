@@ -1,124 +1,106 @@
-﻿public class Program
+﻿public class Knot
 {
+    public int x { get; set; }
+    public int y { get; set; }
+    public HashSet<Tuple<int, int>> visitedPositions = new HashSet<Tuple<int, int>>();
 
-    static HashSet<Tuple<int, int>> visitedPositions = new HashSet<Tuple<int, int>>();
-    static int[] positionHead = new int[2];
-    static int[] positionTail = new int[2];
-    static int[][] positionKnots = new int[10][];
-    static HashSet<Tuple<int, int>> visitedPositionsLastKnot = new HashSet<Tuple<int, int>>();
-
-    public static void moveTail()
+    public Knot(int x, int y)
     {
-        int distanceVert = positionHead[1] - positionTail[1];
-        int distanceHor = positionHead[0] - positionTail[0];
+        this.x = x;
+        this.y = y;
+        this.visitedPositions.Add(new Tuple<int, int>(x, y));
+    }
 
+    public static Knot[] makeRope(int length)
+    {
+        Knot[] rope = new Knot[length];
+        for (int i = 0; i < length; i++)
+        {
+            rope[i] = new Knot(0, 0);
+        }
+        return rope;
+    }
 
-        if ((distanceVert * distanceVert > 1 && distanceHor * distanceHor == 1)
-        || (distanceVert * distanceVert == 1 && distanceHor * distanceHor > 1))  // diagonal
+    public void savePosition()
+    {
+        Tuple<int, int> position = new Tuple<int, int>(this.x, this.y);
+        if (!this.visitedPositions.Contains(position))
         {
-            positionTail[0] += Math.Sign(distanceHor);
-            positionTail[1] += Math.Sign(distanceVert);
-        }
-        else if (distanceVert * distanceVert > 1) // vertical
-        {
-            positionTail[1] += Math.Sign(distanceVert);
-        }
-        else if (distanceHor * distanceHor > 1) // horizontal
-        {
-            positionTail[0] += Math.Sign(distanceHor);
-        }
-
-        // save visited position
-        if (!visitedPositions.Contains(new Tuple<int, int>(positionTail[0], positionTail[1])))
-        {
-            visitedPositions.Add(new Tuple<int, int>(positionTail[0], positionTail[1]));
+            this.visitedPositions.Add(position);
         }
     }
 
-    public static void moveHead(string direction, int steps)
+    public static void moveKnots(Knot[] rope, string direction, int steps)
     {
-
         for (int i = 0; i < steps; i++)
         {
+            //move head i.e. knot 0
             switch (direction)
             {
                 case "R":
-                    positionHead[0] += 1;
+                    rope[0].x += 1;
                     break;
                 case "L":
-                    positionHead[0] -= 1;
+                    rope[0].x -= 1;
                     break;
                 case "U":
-                    positionHead[1] += 1;
+                    rope[0].y += 1;
                     break;
                 case "D":
-                    positionHead[1] -= 1;
+                    rope[0].y -= 1;
                     break;
                 default:
                     break;
             }
-
-            moveTail();
-        }
-    }
-
-    // for part 2
-    public static void moveKnot(string direction, int steps)
-    {
-        for (int i = 0; i < steps; i++)
-        {
-            //move head i.e. positionKnots[0]
-            switch (direction)
-            {
-                case "R":
-                    positionKnots[0][0] += 1;
-                    break;
-                case "L":
-                    positionKnots[0][0] -= 1;
-                    break;
-                case "U":
-                    positionKnots[0][1] += 1;
-                    break;
-                case "D":
-                    positionKnots[0][1] -= 1;
-                    break;
-                default:
-                    break;
-            }
+            rope[0].savePosition();
 
             // move each knot one after the other
-            for (int j = 1; j < positionKnots.Length; j++)
+            for (int j = 1; j < rope.Length; j++)
             {
-                int distanceHorz = positionKnots[j - 1][0] - positionKnots[j][0];
-                int distanceVert = positionKnots[j - 1][1] - positionKnots[j][1];
+                int distanceHorz = rope[j - 1].x - rope[j].x;
+                int distanceVert = rope[j - 1].y - rope[j].y;
 
                 if ((distanceVert * distanceVert > 1 && distanceHorz * distanceHorz >= 1)
-                || (distanceVert * distanceVert >= 1 && distanceHorz * distanceHorz > 1))  // diagonal
+                    || (distanceVert * distanceVert >= 1 && distanceHorz * distanceHorz > 1))  // diagonal
                 {
-                    positionKnots[j][0] += Math.Sign(distanceHorz);
-                    positionKnots[j][1] += Math.Sign(distanceVert);
-                    // Console.WriteLine("Knot {0} moved diagonally to {1}, {2}", j, positionKnots[j][0], positionKnots[j][1]);
+                    rope[j].x += Math.Sign(distanceHorz);
+                    rope[j].y += Math.Sign(distanceVert);
+                    // Console.WriteLine("Knot {0} moved diagonally to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
                 else if (distanceVert * distanceVert > 1) // vertical
                 {
-                    positionKnots[j][1] += Math.Sign(distanceVert);
-                    // Console.WriteLine("Knot {0} moved vertically to {1}, {2}", j, positionKnots[j][0], positionKnots[j][1]);
+                    rope[j].y += Math.Sign(distanceVert);
+                    // Console.WriteLine("Knot {0} moved vertically to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
                 else if (distanceHorz * distanceHorz > 1) // horizontal
                 {
-                    positionKnots[j][0] += Math.Sign(distanceHorz);
-                    // Console.WriteLine("Knot {0} moved horizontally to {1}, {2}", j, positionKnots[j][0], positionKnots[j][1]);
+                    rope[j].x += Math.Sign(distanceHorz);
+                    // Console.WriteLine("Knot {0} moved horizontally to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
                 // else { Console.WriteLine("Knot {0} did not move", j); }
-                // Console.ReadLine();                
+                // Console.ReadLine();     
+                
+                rope[j].savePosition();   
             }
-
-            if (!visitedPositionsLastKnot.Contains(new Tuple<int, int>(positionKnots[9][0], positionKnots[9][1])))
-            {
-                visitedPositionsLastKnot.Add(new Tuple<int, int>(positionKnots[9][0], positionKnots[9][1]));
-            }
-
         }
+    }
+}
+
+public class Program
+{
+    public static List<string[]> readInput(string file)
+    {
+        // read the input file
+        string[] lines = File.ReadAllLines(file);
+
+        List<string[]> instructions = new List<string[]>();
+
+        // read the input file and fill the treeGrid.
+        foreach (string line in lines)
+        {
+            instructions.Add(line.Split(' '));
+        }
+        return instructions;
     }
 
     public static void Main(string[] args)
@@ -132,42 +114,26 @@
         {
             file = args[0];
         }
-        //initialize reader to read the input file.
-        StreamReader reader = new StreamReader(file);
-        string? line;
 
-        // initialize the visited positions
-        visitedPositions.Add(new Tuple<int, int>(0, 0));
-
-        for (int i = 0; i < positionKnots.Length; i++)
-        {
-            positionKnots[i] = new int[2];
-        }
-
-        visitedPositionsLastKnot.Add(new Tuple<int, int>(0, 0));
+        // initialize the ropes with knots
+        Knot[] rope1 = Knot.makeRope(2);
+        Knot[] rope2 = Knot.makeRope(10);
 
         // read the input file
-        while ((line = reader.ReadLine()) != null)
-        {
+        List<string[]> instructions = readInput(file);
+
+        foreach (string[] instruction in instructions)
+        {            
             //Part 1
-            string[] directions = line.Split(' ');
-            moveHead(directions[0], int.Parse(directions[1]));
+            Knot.moveKnots(rope1, instruction[0], int.Parse(instruction[1]));
 
             // Part 2
-            moveKnot(directions[0], int.Parse(directions[1]));
+            Knot.moveKnots(rope2, instruction[0], int.Parse(instruction[1]));
         }
 
-        // show visited positions
-        // foreach (Tuple<int, int> position in visitedPositionsLastKnot)
-        // {
-        //     Console.WriteLine("Visited position: {0}, {1}", position.Item1, position.Item2);
-            
-        // Console.ReadLine();
-        // }
-
-        Console.WriteLine("Total score part 1: {0}", visitedPositions.Count);
-        Console.WriteLine("Total score part 2: {0}", visitedPositionsLastKnot.Count);
-
+        // get the number of visited positions of the last Knot in the rope1
+        Console.WriteLine("Total score part 1: {0}", rope1[rope1.Length -1].visitedPositions.Count);
+        Console.WriteLine("Total score part 2: {0}", rope2[rope2.Length -1].visitedPositions.Count);
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
