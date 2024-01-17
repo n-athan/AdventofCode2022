@@ -14,26 +14,12 @@ public class Signal {
 
 public class Program
 {
-
-    public static void Main(string[] args)
+    public static List<Signal> readInput(string[] lines)
     {
-        string file = "15_demo.txt";
-        if (args.Length == 0) {
-            Console.WriteLine("No input file specified, running demo input: 15_demo.txt");
-        } else {
-            file = args[0];
-        }
-        //initialize reader to read the input file.
-        StreamReader reader = new StreamReader(file);
-
-        // initialize variables
-        string? line;
-        List<List<string>> map = new List<List<string>>();
         List<Signal> signals = new List<Signal>();
-
-        // read the input file
         string pattern = @"[x|y]=(-?\d+)"; 
-        while ((line = reader.ReadLine()) != null)
+
+        foreach (string line in lines)
         {
             MatchCollection matches = Regex.Matches(line, pattern);
             List<int> numbers = new List<int>();
@@ -45,7 +31,24 @@ public class Program
             }
             signals.Add(new Signal((numbers[0], numbers[1]), (numbers[2], numbers[3])));
         }
-        reader.Close();
+        return signals;
+    }
+
+    public static void Main(string[] args)
+    {
+        string file = "15_demo.txt";
+        if (args.Length == 0) {
+            Console.WriteLine("No input file specified, running demo input: 15_demo.txt");
+        } else {
+            file = args[0];
+        }
+        // initialize variables
+        List<List<string>> map = new List<List<string>>();
+
+        // read the input file
+        string[] lines = File.ReadAllLines(file);
+        List<Signal> signals = readInput(lines);
+        Console.WriteLine("Number of signals: {0}", signals.Count);
 
         // find the boundaries of the map
         int minX = signals.Min(s => s.position.x - s.distance);
