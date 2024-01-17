@@ -33,10 +33,31 @@ public class Map
         addSignalsToMap(signals);
     }
 
+    public Map(List<Signal> signals, int focusRow, int rowLimit, int focusColumn, int columnLimit)
+    {
+        this.boundaries = findMapBoundaries(signals, focusRow, rowLimit, focusColumn, columnLimit);
+        Console.WriteLine("map boundaries: {0}", string.Join(", ", this.boundaries));
+        Console.WriteLine("initializing map");
+        this.map = initializeMap(this.boundaries);
+        Console.WriteLine("adding signal ranges to map");
+        addSignalRangestoMap(signals);
+        Console.WriteLine("adding signals to map");
+        addSignalsToMap(signals);
+    }
+
     public static int[] findMapBoundaries(List<Signal> signals, int focusRow, int rowLimit)
     {
         int minX = signals.Min(s => s.position.x - s.distance);
         int maxX = signals.Max(s => s.position.x + s.distance);
+        int minY = focusRow - rowLimit;
+        int maxY = focusRow + rowLimit;
+        return new int[4] { minX, maxX, minY, maxY };
+    }
+
+    public static int[] findMapBoundaries(List<Signal> signals, int focusRow, int rowLimit, int focusColumn, int columnLimit)
+    {
+        int minX = focusColumn - columnLimit;
+        int maxX = focusColumn + columnLimit;
         int minY = focusRow - rowLimit;
         int maxY = focusRow + rowLimit;
         return new int[4] { minX, maxX, minY, maxY };
@@ -76,7 +97,10 @@ public class Map
                     int offset = signal.distance - Math.Abs(i - y);
                     for (int j = x - offset; j <= x + offset; j++)
                     {
-                        this.map[i - this.boundaries[2]][j] = "#";
+                        if (isInRange((j + this.boundaries[0], i )))
+                        {
+                            this.map[i - this.boundaries[2]][j] = "#";
+                        }
                     }
                 }
             }
@@ -133,39 +157,62 @@ public class Program
         return signals;
     }
 
+    // part 1
+    public static int findBeaconsinRow(List<Signal> signals, int row, bool debug = false)
+    {
+        // signals that have a beacon further away then their y distance to the row we want to know. 
+        // their 'no beacon' ranges overlap with the  row
+        List<Signal> signalsFiltered = signals.Where(s => Math.Abs(row - s.position.y) <= s.distance).ToList();
+
+        // create a map with the signals, only the  row.
+        int limit = 0;
+        if (debug) { limit = 15; }
+        Map map = new Map(signalsFiltered, row, limit);
+
+        if (debug) { map.drawMap(); }
+
+        // count the number of points in the specified row that are in the signalranges
+        int index = row - map.boundaries[2];
+        int count = map.map[index].Count(s => s == "#");
+
+        return count;
+    }
+
+    // part 2
+    public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit)
+    {
+        int mid = (limit.min + limit.max) / 2;
+        int offset = limit.max - mid;
+        int x = 0;
+        int y = 0;
+        Map map = new Map(signals, mid, offset, mid, offset);
+
+        for (int i = limit.min; i < limit.max; i++)
+        {
+            int count = map.map[i].Count(s => s == ".");
+            if (count == 1) {
+                x = map.map[i].IndexOf(".");
+                y = i;
+                break;
+            }
+        }
+        int frequency = x * 4000000 + y;
+        return frequency;
+    }
+
     public static void Main(string[] args)
     {
-        string file = "15_demo.txt";
-        if (args.Length == 0)
-        {
-            Console.WriteLine("No input file specified, running demo input: 15_demo.txt");
-        }
-        else
-        {
-            file = args[0];
-        }
+        string file = "15_input.txt";
 
         // read the input file
         string[] lines = File.ReadAllLines(file);
         List<Signal> signals = readInput(lines);
-        Console.WriteLine("Number of signals: {0}", signals.Count);
 
-        // signals that have a beacon further away then their y distance to 10. 
-        // their 'no beacon' ranges overlap with the mystery row
-        int mysteryRow = file == "15_demo.txt" ? 10 : 2000000;
-        List<Signal> signalsFiltered = signals.Where(s => Math.Abs(mysteryRow - s.position.y) <= s.distance).ToList();
-        Console.WriteLine("Number of signals near mystery row: {0}", signalsFiltered.Count);
+        int count = findBeaconsinRow(signals, 200000);
+        Console.WriteLine("Number of signals near mystery row: {0}", count);
 
-        // create a map with the signals
-        Map map = new Map(signalsFiltered, mysteryRow, 1);
-        if (file == "15_demo.txt") { map.drawMap(); }
-
-        // count the number of points in the specified row that are in the signalranges
-        int index = mysteryRow - map.boundaries[2];
-        int count = map.map[index].Count(s => s == "#");
-
-        Console.WriteLine("Total score part 1: {0}", count);
-
+        int frequency = findTuningFrequency(signals, (0, 4000000));
+        Console.WriteLine("Tuning frequency: {0}", frequency);
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");

@@ -43,5 +43,21 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3".Split("\r\n");
         Assert.That(signals[index].beacon.y, Is.EqualTo(by));
     }
 
-    
+    [Test]
+    public void part1()
+    {
+        var lines = Lines;
+        var signals = Signals;
+        var count = Program.findBeaconsinRow(signals, 10, false);
+        Assert.That(count, Is.EqualTo(26));
+    }
+
+    [Test]
+    public void part2()
+    {
+        var lines = Lines;
+        var signals = Signals;
+        var frequency = Program.findTuningFrequency(signals, (0,20));
+        Assert.That(frequency, Is.EqualTo(56000011));
+    }
 }
