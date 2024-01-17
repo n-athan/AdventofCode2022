@@ -16,8 +16,7 @@ public class Signal
 
 public class Map
 {
-    // public List<List<string>> map { get; set; }
-    public string[,] map { get; set; }
+    public char[,] map { get; set; }
     public int[] boundaries { get; set; }
     public int rowLimit { get; set; }
     public int focusRow { get; set; }
@@ -70,12 +69,12 @@ public class Map
             && position.y >= this.boundaries[2] && position.y <= this.boundaries[3];
     }
 
-    public static string[,] initializeMap(int[] boundaries)
+    public static char[,] initializeMap(int[] boundaries)
     {
         int rows = boundaries[3] - boundaries[2] + 1;
         int cols = boundaries[1] - boundaries[0] + 1;
 
-        string[,] map = new string[rows, cols];
+        char[,] map = new char[rows, cols];
 
         return map;
     }
@@ -95,7 +94,7 @@ public class Map
                     {
                         if (isInRange((j + this.boundaries[0], i)))
                         {
-                            this.map[i - this.boundaries[2], j] = "#";
+                            this.map[i - this.boundaries[2], j] = '#';
                         }
                     }
                 }
@@ -109,11 +108,11 @@ public class Map
         {
             if (isInRange(signal.position))
             {
-                this.map[signal.position.y - this.boundaries[2], signal.position.x - this.boundaries[0]] = "S";
+                this.map[signal.position.y - this.boundaries[2], signal.position.x - this.boundaries[0]] = 'S';
             }
             if (isInRange(signal.beacon))
             {
-                this.map[signal.beacon.y - this.boundaries[2], signal.beacon.x - this.boundaries[0]] = "B";
+                this.map[signal.beacon.y - this.boundaries[2], signal.beacon.x - this.boundaries[0]] = 'B';
             }
         }
     }
@@ -130,7 +129,7 @@ public class Map
         }
     }
 
-    public int countItemsInRow(int rowIndex, string itemToCount)
+    public int countItemsInRow(int rowIndex, char itemToCount)
     {
         int count = 0;
         int rowLength = this.map.GetLength(1);
@@ -145,7 +144,7 @@ public class Map
         return count;
     }
 
-    public int findItemInRow(int rowIndex, string itemToFind)
+    public int findItemInRow(int rowIndex, char itemToFind)
     {
         int rowLength = this.map.GetLength(1);
 
@@ -199,7 +198,7 @@ public class Program
 
         // count the number of points in the specified row that are in the signalranges
         int index = row - map.boundaries[2];
-        int count = map.countItemsInRow(index, "#");
+        int count = map.countItemsInRow(index, '#');
 
         return count;
     }
@@ -216,9 +215,11 @@ public class Program
 
         if (debug) { map.drawMap(); }
 
+        var nullChar = new char();
+
         for (int i = limit.min; i <= limit.max; i++)
         {
-            int ind = map.findItemInRow(i, null);
+            int ind = map.findItemInRow(i, nullChar);
             if (ind != -1)
             {   
                 x = ind + map.boundaries[0];
