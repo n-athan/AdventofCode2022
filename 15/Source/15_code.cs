@@ -208,7 +208,7 @@ public class Program
         string[] lines = File.ReadAllLines(file);
         List<Signal> signals = readInput(lines);
 
-        int count = findBeaconsinRow(signals, 200000);
+        int count = findBeaconsinRow(signals, 2000000);
         Console.WriteLine("Number of signals near mystery row: {0}", count);
 
         int frequency = findTuningFrequency(signals, (0, 4000000));
