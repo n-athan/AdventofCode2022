@@ -206,6 +206,7 @@ public class Program
     // part 2
     public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit, bool debug = false)
     {
+        //todo works in test, but OutofMemoryException in real input
         int mid = (limit.min + limit.max) / 2;
         int offset = limit.max - mid;
         int x = 0;
