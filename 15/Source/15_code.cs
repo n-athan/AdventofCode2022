@@ -16,7 +16,8 @@ public class Signal
 
 public class Map
 {
-    public List<List<string>> map { get; set; }
+    // public List<List<string>> map { get; set; }
+    public string[,] map { get; set; }
     public int[] boundaries { get; set; }
     public int rowLimit { get; set; }
     public int focusRow { get; set; }
@@ -69,18 +70,13 @@ public class Map
             && position.y >= this.boundaries[2] && position.y <= this.boundaries[3];
     }
 
-    public static List<List<string>> initializeMap(int[] boundaries)
+    public static string[,] initializeMap(int[] boundaries)
     {
-        List<List<string>> map = new List<List<string>>();
-        for (int y = boundaries[2]; y <= boundaries[3]; y++)
-        {
-            List<string> row = new List<string>();
-            for (int x = boundaries[0]; x <= boundaries[1]; x++)
-            {
-                row.Add(".");
-            }
-            map.Add(row);
-        }
+        int rows = boundaries[3] - boundaries[2] + 1;
+        int cols = boundaries[1] - boundaries[0] + 1;
+
+        string[,] map = new string[rows, cols];
+
         return map;
     }
 
@@ -97,9 +93,9 @@ public class Map
                     int offset = signal.distance - Math.Abs(i - y);
                     for (int j = x - offset; j <= x + offset; j++)
                     {
-                        if (isInRange((j + this.boundaries[0], i )))
+                        if (isInRange((j + this.boundaries[0], i)))
                         {
-                            this.map[i - this.boundaries[2]][j] = "#";
+                            this.map[i - this.boundaries[2], j] = "#";
                         }
                     }
                 }
@@ -113,25 +109,55 @@ public class Map
         {
             if (isInRange(signal.position))
             {
-                this.map[signal.position.y - this.boundaries[2]][signal.position.x - this.boundaries[0]] = "S";
+                this.map[signal.position.y - this.boundaries[2], signal.position.x - this.boundaries[0]] = "S";
             }
             if (isInRange(signal.beacon))
             {
-                this.map[signal.beacon.y - this.boundaries[2]][signal.beacon.x - this.boundaries[0]] = "B";
+                this.map[signal.beacon.y - this.boundaries[2], signal.beacon.x - this.boundaries[0]] = "B";
             }
         }
     }
 
     public void drawMap()
     {
-        foreach (List<string> row in this.map)
+        for (int i = 0; i < this.map.GetLength(0); i++)
         {
-            foreach (string sign in row)
+            for (int j = 0; j < this.map.GetLength(1); j++)
             {
-                Console.Write(sign);
+                Console.Write(this.map[i, j]);
             }
             Console.WriteLine();
         }
+    }
+
+    public int countItemsInRow(int rowIndex, string itemToCount)
+    {
+        int count = 0;
+        int rowLength = this.map.GetLength(1);
+
+        for (int j = 0; j < rowLength; j++)
+        {
+            if (this.map[rowIndex, j] == itemToCount)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int findItemInRow(int rowIndex, string itemToFind)
+    {
+        int rowLength = this.map.GetLength(1);
+
+        for (int j = 0; j < rowLength; j++)
+        {
+            if (map[rowIndex, j] == itemToFind)
+            {
+                return j;
+            }
+        }
+
+        return -1; // Item not found
     }
 }
 
@@ -173,25 +199,29 @@ public class Program
 
         // count the number of points in the specified row that are in the signalranges
         int index = row - map.boundaries[2];
-        int count = map.map[index].Count(s => s == "#");
+        int count = map.countItemsInRow(index, "#");
 
         return count;
     }
 
     // part 2
-    public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit)
+    public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit, bool debug = false)
     {
         int mid = (limit.min + limit.max) / 2;
         int offset = limit.max - mid;
         int x = 0;
         int y = 0;
         Map map = new Map(signals, mid, offset, mid, offset);
+        int rowLength = map.map.GetLength(1);
 
-        for (int i = limit.min; i < limit.max; i++)
+        if (debug) { map.drawMap(); }
+
+        for (int i = limit.min; i <= limit.max; i++)
         {
-            int count = map.map[i].Count(s => s == ".");
-            if (count == 1) {
-                x = map.map[i].IndexOf(".");
+            int ind = map.findItemInRow(i, null);
+            if (ind != -1)
+            {   
+                x = ind + map.boundaries[0];
                 y = i;
                 break;
             }
