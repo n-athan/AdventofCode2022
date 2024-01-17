@@ -3,21 +3,24 @@
 public class Program
 {
 
+    //  losse functie voor deel 2
     public static int checkView(List<int[]> treeGrid, int directionVert, int directionHorz, int row, int column)
     {
         int treeCounter = 0;
         int rowCounter = row + directionVert;
         int columnCounter = column + directionHorz;
-        while (rowCounter >= 0 && rowCounter < treeGrid.Count && columnCounter >= 0 && columnCounter < treeGrid[rowCounter].Length)
+        // we gaan in 1 richting kijken, directionVert en directionHorz bepalen die richting. één daarvan is altijd 0, de andere 1 of -1.
+        while (rowCounter >= 0 && rowCounter < treeGrid.Count && columnCounter >= 0 && columnCounter < treeGrid[rowCounter].Length) //check of je binnen de grid blijft.
         {
-            if (treeGrid[rowCounter][columnCounter] < treeGrid[row][column])
+            if (treeGrid[rowCounter][columnCounter] < treeGrid[row][column]) // boom lager dan huidige positie, dus zichtbaar en meetellen
             {
                 treeCounter++;
-            } else if (treeGrid[rowCounter][columnCounter] >= treeGrid[row][column])
+            } else if (treeGrid[rowCounter][columnCounter] >= treeGrid[row][column]) // boom hoger of even hoog als huidige positie, dus zichtbaar en meetellen en stoppen met zoeken in deze richting.
             {
                 treeCounter++;
                 break;
             }
+            // bomen in deze richting blijven zoeken
             rowCounter += directionVert;
             columnCounter += directionHorz;
         }
@@ -56,17 +59,17 @@ public class Program
         treeGrid.ToArray();
 
         // part 1
-        int visibleTrees = treeGrid.Count * treeGrid[0].Length;
+        int visibleTrees = treeGrid.Count * treeGrid[0].Length; // start met aanname dat alle bomen zichtbaar zijn
         for (int row = 1; row < treeGrid.Count - 1; row++)
         {
             for (int column = 1; column < treeGrid[row].Length - 1; column++)
             {                
                 // check visible from east
-                int[] subArray = treeGrid[row].Skip(column + 1).ToArray();
-                if (subArray.Max() >= treeGrid[row][column])
+                int[] subArray = treeGrid[row].Skip(column + 1).ToArray(); // alles rechts van de huidige positie
+                if (subArray.Max() >= treeGrid[row][column]) // als dat hoger is dan de huidige positie, dan is de huidige positie niet zichtbaar vanaf het oosten. Dan andere richtingen checken. 
                 {
                     // check visible from west
-                    subArray = treeGrid[row].Take(column).ToArray();
+                    subArray = treeGrid[row].Take(column).ToArray(); // etc 
                     if (subArray.Max() >= treeGrid[row][column])
                     {
                         // check visible from north
@@ -77,7 +80,7 @@ public class Program
                             subArray = treeGrid.Select(x => x[column]).Skip(row + 1).ToArray();
                             if (subArray.Max() >= treeGrid[row][column])
                             {
-                                visibleTrees--;
+                                visibleTrees--; // vanauit geen enkele richting zichtbaar, dus niet meetellen als zichtbaar.
                             }
                         }
                     }
@@ -87,6 +90,7 @@ public class Program
 
         // part 2
         int highestScenicScore = 0;
+        // beoaal per boom de score en kijken of dat de hoogste score is.
         for (int row = 0; row < treeGrid.Count; row++)
         {
             for (int column = 0; column < treeGrid[row].Length; column++)
