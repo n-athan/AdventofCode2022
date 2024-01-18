@@ -207,6 +207,12 @@ public class Program
     public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit, bool debug = false)
     {
         //todo works in test, but OutofMemoryException in real input
+        //Out of Memory is inherent aan de oplossing. Oplossing simpelweg een beter algoritme.
+
+        //sparse arrays ipv multidimensional arrays
+        //bits ipv chars opslaan, 8x so klein
+        // coordinaten mappen zodat elke sensor een vierkant scant. makkelijker ranges excluden. 
+        // dan 1 punt zoeken dat buiten alle ranges valt. 
         int mid = (limit.min + limit.max) / 2;
         int offset = limit.max - mid;
         int x = 0;

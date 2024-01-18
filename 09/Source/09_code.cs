@@ -1,5 +1,9 @@
-﻿public class Knot
+﻿using NLog;
+
+public class Knot
 {
+    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
     public int x { get; set; }
     public int y { get; set; }
     public HashSet<Tuple<int, int>> visitedPositions = new HashSet<Tuple<int, int>>();
@@ -65,22 +69,27 @@
                 {
                     rope[j].x += Math.Sign(distanceHorz);
                     rope[j].y += Math.Sign(distanceVert);
-                    // Console.WriteLine("Knot {0} moved diagonally to {1}, {2}", j, rope[j].x, rope[j].y);
+                    // rope[j].x += Math.Abs(distanceHorz) -1;
+                    // rope[j].y += Math.Abs(distanceVert) -1;
+                    Log.Debug("Knot {0} moved diagonally to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
                 else if (distanceVert * distanceVert > 1) // vertical
                 {
                     rope[j].y += Math.Sign(distanceVert);
-                    // Console.WriteLine("Knot {0} moved vertically to {1}, {2}", j, rope[j].x, rope[j].y);
+                    Log.Debug("Knot {0} moved vertically to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
                 else if (distanceHorz * distanceHorz > 1) // horizontal
                 {
                     rope[j].x += Math.Sign(distanceHorz);
-                    // Console.WriteLine("Knot {0} moved horizontally to {1}, {2}", j, rope[j].x, rope[j].y);
+                    Log.Debug("Knot {0} moved horizontally to {1}, {2}", j, rope[j].x, rope[j].y);
                 }
-                // else { Console.WriteLine("Knot {0} did not move", j); }
+                else
+                {
+                    Log.Debug("Knot {0} did not move", j);
+                }
                 // Console.ReadLine();     
-                
-                rope[j].savePosition();   
+
+                rope[j].savePosition();
             }
         }
     }
@@ -88,6 +97,8 @@
 
 public class Program
 {
+    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
     public static List<string[]> readInput(string[] lines)
     {
         List<string[]> instructions = new List<string[]>();
@@ -121,7 +132,7 @@ public class Program
         List<string[]> instructions = readInput(lines);
 
         foreach (string[] instruction in instructions)
-        {            
+        {
             //Part 1
             Knot.moveKnots(rope1, instruction[0], int.Parse(instruction[1]));
 
@@ -130,8 +141,8 @@ public class Program
         }
 
         // get the number of visited positions of the last Knot in the rope1
-        Console.WriteLine("Total score part 1: {0}", rope1[rope1.Length -1].visitedPositions.Count);
-        Console.WriteLine("Total score part 2: {0}", rope2[rope2.Length -1].visitedPositions.Count);
+        Console.WriteLine("Total score part 1: {0}", rope1[rope1.Length - 1].visitedPositions.Count);
+        Console.WriteLine("Total score part 2: {0}", rope2[rope2.Length - 1].visitedPositions.Count);
 
         // wait for input before exiting
         Console.WriteLine("Press enter to finish");
