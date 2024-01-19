@@ -12,6 +12,37 @@ public class Signal
         this.beacon = beacon;
         this.distance = Math.Abs(position.x - beacon.x) + Math.Abs(position.y - beacon.y);
     }
+
+    public HashSet<(int x, int y)> getOuterEdge((int min, int max) limit)
+    {
+        HashSet<(int x, int y)> outerEdge = new HashSet<(int x, int y)>();
+        int x = this.position.x;
+        int y = this.position.y;
+        int distance = this.distance;
+
+        for (int i = 0; i <= distance+1; i++)
+        {
+            int offset = distance - i;
+            if (isInLimit((x - offset -1, y - i), limit)) { outerEdge.Add((x - offset -1, y - i)); }
+            if (isInLimit((x - offset -1, y + i), limit)) { outerEdge.Add((x - offset -1, y + i)); }
+            if (isInLimit((x + offset + 1, y + i), limit)) { outerEdge.Add((x + offset +1, y + i)); }
+            if (isInLimit((x + offset + 1, y - i), limit)) { outerEdge.Add((x + offset +1, y - i)); }
+        }
+
+        return outerEdge;
+    }
+
+    public static bool isInLimit((int x, int y) point,(int min, int max) limit)
+    {
+        return point.x >= limit.min && point.x <= limit.max && point.y >= limit.min && point.y <= limit.max;
+    }
+
+    public bool isInRange((int x, int y) point)
+    {
+        int distanceToPoint = Math.Abs(point.x - this.position.x) + Math.Abs(point.y - this.position.y);
+
+        return distanceToPoint <= this.distance;
+    }
 }
 
 public class Map
@@ -204,38 +235,50 @@ public class Program
     }
 
     // part 2
-    public static int findTuningFrequency(List<Signal> signals, (int min, int max) limit, bool debug = false)
-    {
-        //todo works in test, but OutofMemoryException in real input
-        //Out of Memory is inherent aan de oplossing. Oplossing simpelweg een beter algoritme.
+    public static long findTuningFrequency(List<Signal> signals, (int min, int max) limit, bool debug = false)
+    {   // er is precies 1 punt dat buiten alle ranges valt.
+        // dat ligt daarom op de rand van een aantal ranges.
+        // beperk de zoekruimte tot de rand van de ranges.
 
-        //sparse arrays ipv multidimensional arrays
-        //bits ipv chars opslaan, 8x so klein
-        // coordinaten mappen zodat elke sensor een vierkant scant. makkelijker ranges excluden. 
-        // dan 1 punt zoeken dat buiten alle ranges valt. 
-        int mid = (limit.min + limit.max) / 2;
-        int offset = limit.max - mid;
-        int x = 0;
-        int y = 0;
-        Map map = new Map(signals, mid, offset, mid, offset);
-        int rowLength = map.map.GetLength(1);
-
-        if (debug) { map.drawMap(); }
-
-        var nullChar = new char();
-
-        for (int i = limit.min; i <= limit.max; i++)
+        // set van alle punten die mogelijk de juiste zijn.
+        HashSet<(int, int)> possibleLocations = new HashSet<(int, int)>();
+        foreach (Signal signal in signals)
         {
-            int ind = map.findItemInRow(i, nullChar);
-            if (ind != -1)
-            {   
-                x = ind + map.boundaries[0];
-                y = i;
-                break;
-            }
+            // vind alle punten die net buiten het bereik van de sensor liggen.
+            HashSet<(int, int)> signalRange = signal.getOuterEdge(limit);
+            // voeg deze toe aan de set van mogelijke punten.
+            possibleLocations.UnionWith(signalRange);
         }
-        int frequency = x * 4000000 + y;
-        return frequency;
+
+        Console.WriteLine("number of possible locations: {0}", possibleLocations.Count);
+
+        // voor elke mogelijke locatie, kijk of deze aan alle voorwaarden voldoet.
+        foreach ((int x, int y) location in possibleLocations)
+        {
+            // check of de locatie in de range van een sensor ligt.
+            // dan is dit niet de juiste locatie.
+            bool inRange = false;
+            foreach (Signal signal in signals)
+            {
+                if (signal.isInRange(location))
+                {
+                    inRange = true;
+                    break;
+                } 
+            }
+
+            // als de locatie niet in de range van alle sensors ligt, dan is dit de juiste locatie.
+            if (!inRange)
+            {
+                Console.WriteLine("found location: {0},{1}", location.x, location.y);
+                long xL = location.x;
+                long yL = location.y;
+                long frequency = xL*4000000 + yL;
+                return frequency;
+            } 
+        }
+
+        return -1;        
     }
 
     public static void Main(string[] args)
@@ -249,7 +292,8 @@ public class Program
         int count = findBeaconsinRow(signals, 2000000);
         Console.WriteLine("Number of signals near mystery row: {0}", count);
 
-        int frequency = findTuningFrequency(signals, (0, 4000000));
+        long frequency = findTuningFrequency(signals, (0, 4000000));
+
         Console.WriteLine("Tuning frequency: {0}", frequency);
 
         // wait for input before exiting

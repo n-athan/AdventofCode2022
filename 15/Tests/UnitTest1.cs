@@ -54,6 +54,36 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3";
         Assert.That(count, Is.EqualTo(26));
     }
 
+    [TestCase(0,13)]
+    [TestCase(1,8)]
+    [TestCase(2,13)]
+    [TestCase(6,32)]
+    public void TestOuterEdge(int index,int expected)
+    {
+        var lines = Lines;
+        var signals = Signals;
+        HashSet<(int,int)> edgePoints = signals[index].getOuterEdge((0,20));
+        Assert.That(edgePoints.Count, Is.EqualTo(expected));
+    }
+
+    [TestCase(14,11,true)]
+    [TestCase(-4,12,false)]
+    public void TestIsInLimit(int x,int y,bool expected)
+    {
+        Assert.That(Signal.isInLimit((x,y), (0,20)), Is.EqualTo(expected));
+    }
+
+    [TestCase(0,0,16,true)]
+    [TestCase(0,0,50,false)]
+    [TestCase(6,-1,7,true)]
+    [TestCase(6,-2,7,false)]
+    public void TestIsInRange(int index,int x,int y,bool expected)
+    {
+        var lines = Lines;
+        var signals = Signals;
+        Assert.That(signals[index].isInRange((x,y)), Is.EqualTo(expected));
+    }
+
     [Test]
     public void part2()
     {
