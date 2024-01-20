@@ -39,7 +39,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         Assert.That(valve.Name, Is.EqualTo(name));
         Assert.That(valve.FlowRate, Is.EqualTo(flowRate));
         Assert.That(valve.Tunnels, Is.EqualTo(tunnels.ToList()));
-        Assert.That(valve.PressureReleased, Is.EqualTo(pressureReleased));
+        Assert.That(valve.MaxPressureReleased, Is.EqualTo(pressureReleased));
         Assert.That(valve.Open, Is.EqualTo(open));
     }
 
@@ -52,8 +52,9 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     {
         var valve = Valves[name];
         valve.OpenValve(minutesRemaining);
-        Assert.That(valve.PressureReleased, Is.EqualTo(expectedPressureReleased));
+        Assert.That(valve.MaxPressureReleased, Is.EqualTo(expectedPressureReleased));
         Assert.That(valve.Open, Is.EqualTo(expectedOpen));
+        valve.CloseValve();
     }
 
     [Test, Order(5)]
@@ -66,17 +67,6 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         var valve = Valves[name];
         Assert.That(valve.Index, Is.EqualTo(expectedIndex));
     }
-
-//     @"Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
-// Valve BB has flow rate=13; tunnels lead to valves CC, AA
-// Valve CC has flow rate=2; tunnels lead to valves DD, BB
-// Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
-// Valve EE has flow rate=3; tunnels lead to valves FF, DD
-// Valve FF has flow rate=0; tunnels lead to valves EE, GG
-// Valve GG has flow rate=0; tunnels lead to valves FF, HH
-// Valve HH has flow rate=22; tunnel leads to valve GG
-// Valve II has flow rate=0; tunnels lead to valves AA, JJ
-// Valve JJ has flow rate=21; tunnel leads to valve II";
 
     [Test, Order(6)]
     [TestCase("AA", "DD", 1)]
@@ -113,13 +103,21 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         Assert.That(path.Select(v => v.Name), Is.EqualTo(expectedPath));
     }
 
-    // [Test]
-    // public void part1()
-    // {
-    //     var lines = Lines;
+    [Test, Order(9)]
+    public void TestGetOpenableValves()
+    {
+        var openableValves = Valve.getOpenableValves(Valves);
+        Assert.That(openableValves.Count, Is.EqualTo(6));
+        Assert.That(openableValves.Select(v => v.Name), Is.EqualTo(new string[] { "BB", "CC", "DD", "EE", "HH", "JJ" }));
+    }
 
-    //     Assert.That(, Is.EqualTo(1651));
-    // }
+    [Test, Order(10)]
+    public void part1()
+    {
+        var lines = Lines;
+        int score = Program.part1(Valves, getDistanceMatrix[0]);
+        Assert.That(score, Is.EqualTo(1651));
+    }
 
     // [Test]
     // public void part2()

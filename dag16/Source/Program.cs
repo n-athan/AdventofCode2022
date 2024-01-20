@@ -19,7 +19,7 @@ public class Program
         int[,] distanceMatrix = getDistanceMatrix[0];
         int[,] previousMatrix = getDistanceMatrix[1];
         
-        Console.WriteLine("Total score part 1: {0}",part1());
+        Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix));
         Console.WriteLine("Total score part 2: {0}",part2());
 
 
@@ -106,10 +106,36 @@ public class Program
         return new List<int[,]>{distanceMatrix, previousMatrix};
     }
 
-    public static int part1()
+    public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix)
     {
+        // functie nodig om te bepalen hoeveel water er verschil zit tussen alle dichte kleppen, afstand*flowRate. 
+        // om te bepalen welke we als eerste naar toe gaan. 
+        int minutesRemaining = 30;
+        Valve current = valves["AA"];
 
-        int score = 0;
+        while (minutesRemaining > 0)
+        {
+            List<Valve> openableValves = Valve.getOpenableValves(valves);
+            if (openableValves.Count == 0) { break; }
+            foreach (var valve in openableValves)
+            {
+                int distance = distanceMatrix[current.Index,valve.Index];
+                valve.getMaxPressureReleased(minutesRemaining-(distance+1));
+            }
+            // go to the valve with the most potential.
+            openableValves = openableValves.OrderByDescending(v => v.MaxPressureReleased).ToList();
+            Console.WriteLine("Openable valves name and potential: {0}",string.Join(", ",openableValves.Select(v => v.Name + ":" + v.MaxPressureReleased)));
+
+            // check if we have enough time to get there and open the valve.
+            minutesRemaining -= distanceMatrix[current.Index,openableValves[0].Index] +1; // -1 for the time it takes to open valve.
+            if (minutesRemaining <= 0) { break; }
+
+            // update location and open valve
+            current = openableValves[0];
+            current.OpenValve(minutesRemaining);
+        }
+
+        int score = valves.Values.Sum(v => v.MaxPressureReleased);
         return score;
     }
 

@@ -7,7 +7,7 @@ public class Valve
     public string Name { get; set; }
     public int FlowRate { get; set; }
     public List<string> Tunnels { get; set; }
-    public int PressureReleased { get; set; }
+    public int MaxPressureReleased { get; set; }
     public bool Open { get; set; }
     public int Index { get; set;}
 
@@ -16,7 +16,7 @@ public class Valve
         Name = name;
         FlowRate = flowRate;
         Tunnels = tunnels.Split(", ").ToList();
-        PressureReleased = 0;
+        MaxPressureReleased = 0;
         Open = false;
         Index = 0;
     }
@@ -24,7 +24,14 @@ public class Valve
     public void OpenValve(int minutesRemaining)
     {
         Open = true;
-        PressureReleased += FlowRate * minutesRemaining;
+        getMaxPressureReleased(minutesRemaining);
+        Console.WriteLine($"Opening valve {Name} for {minutesRemaining} minutes. Pressure released: {MaxPressureReleased}");
+    }
+
+    public void CloseValve() // only for testing
+    {
+        Open = false;
+        MaxPressureReleased = 0;
     }
 
     public static void SetIndex(Dictionary<string,Valve> valves)
@@ -62,6 +69,24 @@ public class Valve
         }
         path.Reverse();
         return path;
+    }
+
+    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves)
+    {
+        var openableValves = new List<Valve>();
+        foreach (var valve in valves)
+        {
+            if (valve.Value.FlowRate > 0 && !valve.Value.Open)
+            {
+                openableValves.Add(valve.Value);
+            }
+        }
+        return openableValves;
+    }
+
+    public void getMaxPressureReleased(int minutesRemaining)
+    {
+        MaxPressureReleased = FlowRate * minutesRemaining;
     }
 
 }
