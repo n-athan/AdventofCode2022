@@ -21,11 +21,10 @@ public class Valve
         Index = 0;
     }
 
-    public void OpenValve(int minutesRemaining)
+    public void OpenValve(int minutesRemaining) // only for testing
     {
         Open = true;
         getMaxPressureReleased(minutesRemaining);
-        Console.WriteLine($"Opening valve {Name} for {minutesRemaining} minutes. Pressure released: {MaxPressureReleased}");
     }
 
     public void CloseValve() // only for testing
@@ -71,14 +70,17 @@ public class Valve
         return path;
     }
 
-    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves)
+    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves, Valve currentValve, int minutesRemaining, int[,] distanceMatrix)
     {
         var openableValves = new List<Valve>();
         foreach (var valve in valves)
         {
             if (valve.Value.FlowRate > 0 && !valve.Value.Open)
             {
-                openableValves.Add(valve.Value);
+                if (distanceMatrix[valve.Value.Index, currentValve.Index] <= minutesRemaining)
+                {
+                    openableValves.Add(valve.Value);
+                }
             }
         }
         return openableValves;

@@ -106,7 +106,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     [Test, Order(9)]
     public void TestGetOpenableValves()
     {
-        var openableValves = Valve.getOpenableValves(Valves);
+        var openableValves = Valve.getOpenableValves(Valves, Valves["AA"], 30, getDistanceMatrix[0]);
         Assert.That(openableValves.Count, Is.EqualTo(6));
         Assert.That(openableValves.Select(v => v.Name), Is.EqualTo(new string[] { "BB", "CC", "DD", "EE", "HH", "JJ" }));
     }

@@ -108,38 +108,59 @@ public class Program
 
     public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix)
     {
-        // functie nodig om te bepalen hoeveel water er verschil zit tussen alle dichte kleppen, afstand*flowRate. 
-        // om te bepalen welke we als eerste naar toe gaan. 
         int minutesRemaining = 30;
         Valve current = valves["AA"];
 
-        // TODO onderstaande is in de goede richting, maar nog niet helemaal goed.
-        // todo recursieve functie die per keuze voor openable klep de score berekent en de beste keuze teruggeeft.
+        // Learned about Queues in: https://www.reddit.com/r/adventofcode/comments/zo21au/comment/j0nz8df/
+        // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
+        Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)> queue = new Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)>();
+        
+        // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
+        Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
 
-        while (minutesRemaining > 0)
+        // begin bij klep AA
+        queue.Enqueue((current,minutesRemaining,0,new string[]{}));
+        
+        // kijk naar alle kleppen die open kunnen, zet ze in de queue. 
+        // ga dan de queue af en kijk of er nog meer kleppen open kunnen (tijd genoeg).
+        // sla de kleppen op die open zijn gegaan en de totale flow die er is geweest.
+        // aan het einde kijken welke volgorde het meest efficient is geweest.
+        while (queue.Count > 0)
         {
-            List<Valve> openableValves = Valve.getOpenableValves(valves);
-            if (openableValves.Count == 0) { break; }
-            
+            var queueItem = queue.Dequeue();
+
+            List<Valve> openableValves = Valve.getOpenableValves(valves, queueItem.valve, queueItem.minutesRemaining, distanceMatrix);
+            // not in queueItem.valvesOpened
+            openableValves = openableValves.Where(v => !queueItem.valvesOpened.Contains(v.Name)).ToList();
+
             foreach (var valve in openableValves)
             {
-                int distance = distanceMatrix[current.Index,valve.Index];
-                valve.getMaxPressureReleased(minutesRemaining-(distance+1));
+                // hoeveel tijd is er nog over als we naar deze klep gaan
+                int time = queueItem.minutesRemaining - (distanceMatrix[queueItem.valve.Index, valve.Index] +1);
+
+                // hoeveel flow is er maximaal is als we naar deze klep gaan
+                valve.getMaxPressureReleased(time);
+                int totalFlow = queueItem.totalFlow + valve.MaxPressureReleased;
+
+                // voeg klep toe aan de lijst van kleppen die open zijn gegaan
+                string[] valvesOpened = queueItem.valvesOpened.Append(valve.Name).ToArray();
+
+                // zet de klep in de queue, om te kijken of hierna nog meer kleppen open kunnen
+                queue.Enqueue((valve, time, totalFlow, valvesOpened));
+                
+                // sla op welke kleppen er open zijn gegaan en hoeveel flow er maximaal is geweest
+                maxFlows.Add(valvesOpened, totalFlow);
             }
-            // go to the valve with the most potential.
-            openableValves = openableValves.OrderByDescending(v => v.MaxPressureReleased).ToList();
-            Console.WriteLine("Openable valves name and potential: {0}",string.Join(", ",openableValves.Select(v => v.Name + ":" + v.MaxPressureReleased)));
-
-            // check if we have enough time to get there and open the valve.
-            minutesRemaining -= distanceMatrix[current.Index,openableValves[0].Index] +1; // -1 for the time it takes to open valve.
-            if (minutesRemaining <= 0) { break; }
-
-            // update location and open valve
-            current = openableValves[0];
-            current.OpenValve(minutesRemaining);
         }
 
-        int score = valves.Values.Sum(v => v.MaxPressureReleased);
+        int score = maxFlows.Values.Max();
+        Console.WriteLine(" Max Flow Key: {0}",string.Join(", ",maxFlows.Where(v => v.Value == score).Select(v => string.Join(", ",v.Key))));
         return score;
     }
 
