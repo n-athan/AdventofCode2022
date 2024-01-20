@@ -6,7 +6,7 @@ public class Program
 
     public static void Main(string[] args)
     {
-        string file = "_16_input.txt";
+        string file = "dag16_input.txt";
 
         // read the input file
         string[] lines = File.ReadAllLines(file);
