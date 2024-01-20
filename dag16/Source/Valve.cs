@@ -70,19 +70,17 @@ public class Valve
         return path;
     }
 
-    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves, Valve currentValve, int minutesRemaining, int[,] distanceMatrix)
+    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves, Valve currentValve, int minutesRemaining, int[,] distanceMatrix, string[] excludedValves = null)
     {
         var openableValves = new List<Valve>();
         foreach (var valve in valves)
         {
-            if (valve.Value.FlowRate > 0 && !valve.Value.Open)
+            if (valve.Value.FlowRate > 0 && !excludedValves.Contains(valve.Value.Name) && distanceMatrix[valve.Value.Index, currentValve.Index] <= minutesRemaining)
             {
-                if (distanceMatrix[valve.Value.Index, currentValve.Index] <= minutesRemaining)
-                {
-                    openableValves.Add(valve.Value);
-                }
+                openableValves.Add(valve.Value);
             }
         }
+
         return openableValves;
     }
 

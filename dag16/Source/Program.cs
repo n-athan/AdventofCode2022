@@ -20,7 +20,7 @@ public class Program
         int[,] previousMatrix = getDistanceMatrix[1];
         
         Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix));
-        Console.WriteLine("Total score part 2: {0}",part2());
+        // Console.WriteLine("Total score part 2: {0}",part2());
 
 
         // wait for input before exiting
@@ -135,9 +135,7 @@ public class Program
         {
             var queueItem = queue.Dequeue();
 
-            List<Valve> openableValves = Valve.getOpenableValves(valves, queueItem.valve, queueItem.minutesRemaining, distanceMatrix);
-            // not in queueItem.valvesOpened
-            openableValves = openableValves.Where(v => !queueItem.valvesOpened.Contains(v.Name)).ToList();
+            List<Valve> openableValves = Valve.getOpenableValves(valves, queueItem.valve, queueItem.minutesRemaining, distanceMatrix, queueItem.valvesOpened);
 
             foreach (var valve in openableValves)
             {
@@ -164,10 +162,51 @@ public class Program
         return score;
     }
 
-    public static int part2()
+    public static int part2(Dictionary<string,Valve> valves, int[,] distanceMatrix)
     {
-        int score = 0;
+        int minutesRemaining = 26;
+        Valve current = valves["AA"];
+
+        // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
+        // todo 2 queue's? 1 voor de olifant en 1 voor mij? want we hebben niet altijd dezelfde tijd over.
+        Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)> queueMe = new Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)>();
+        
+        Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)> queueElephant = new Queue<(Valve valve,
+            int minutesRemaining,
+            int totalFlow,
+            string[] valvesOpened)>();
+        
+        // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
+        Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
+
+        // begin bij klep AA
+        queueMe.Enqueue((current, minutesRemaining, 0, new string[]{}));
+        queueElephant.Enqueue((current, minutesRemaining, 0, new string[]{}));
+
+        // kijk naar alle kleppen die open kunnen, zet ze in de queue. 
+        // ga dan de queue af en kijk of er nog meer kleppen open kunnen (tijd genoeg).
+        // sla de kleppen op die open zijn gegaan en de totale flow die er is geweest.
+        // aan het einde kijken welke volgorde het meest efficient is geweest.
+
+        
+        // haal uit maxFlows alle keys met duplicaten
+        // maxFlows = maxFlows.Select(v => if(v.Key.Distinct().Count() == v.Key.Count()){ return v}).ToDictionary(v => v.Key, v => v.Value
+        maxFlows = maxFlows.Where(v => v.Key.Distinct().Count() == v.Key.Count()).ToDictionary(v => v.Key, v => v.Value);
+
+        int score = maxFlows.Values.Max();
+        Console.WriteLine(" Max Flow Key: {0}",string.Join(", ",maxFlows.Where(v => v.Value == score).Select(v => string.Join(", ",v.Key))));
         return score;
-    }    
+    }  
+
+
 }
 
