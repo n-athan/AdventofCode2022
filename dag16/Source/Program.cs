@@ -113,10 +113,14 @@ public class Program
         int minutesRemaining = 30;
         Valve current = valves["AA"];
 
+        // TODO onderstaande is in de goede richting, maar nog niet helemaal goed.
+        // todo recursieve functie die per keuze voor openable klep de score berekent en de beste keuze teruggeeft.
+
         while (minutesRemaining > 0)
         {
             List<Valve> openableValves = Valve.getOpenableValves(valves);
             if (openableValves.Count == 0) { break; }
+            
             foreach (var valve in openableValves)
             {
                 int distance = distanceMatrix[current.Index,valve.Index];
