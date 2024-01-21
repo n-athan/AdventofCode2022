@@ -44,7 +44,7 @@ public class Valve
         }
     }
 
-    public static List<Valve> GetShortestPath(Dictionary<string,Valve> valves, string start, string end, int[,] previousMatrix)
+    public static List<Valve>? GetShortestPath(Dictionary<string,Valve> valves, string start, string end, int[,] previousMatrix)
     {
         var previous = previousMatrix;
         var path = new List<Valve>();
@@ -62,15 +62,18 @@ public class Valve
             int prev = previous[valves[start].Index, valves[end].Index];
             
             // find element in Dictionary valves where the propery Index == v
-            Valve valve = valves.Values.FirstOrDefault(v => v.Index == prev);
-            path.Add(valve);
-            end = valve.Name;
+            Valve? valve = valves.Values.FirstOrDefault(v => v.Index == prev);
+            if (valve != null)
+            {
+                path.Add(valve);
+                end = valve.Name;
+            }
         }
         path.Reverse();
         return path;
     }
 
-    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves, Valve currentValve, int minutesRemaining, int[,] distanceMatrix, string[] excludedValves = null)
+    public static List<Valve> getOpenableValves(Dictionary<string,Valve> valves, Valve currentValve, int minutesRemaining, int[,] distanceMatrix, string[] excludedValves)
     {
         var openableValves = new List<Valve>();
         foreach (var valve in valves)

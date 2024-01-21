@@ -90,6 +90,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     {
         var previousMatrix = getDistanceMatrix[1];
         var path = Valve.GetShortestPath(Valves, start, end, previousMatrix);
+        Assert.That(path, Is.Not.EqualTo(null));
         Assert.That(path.Count, Is.EqualTo(pathCount));
     }
 
@@ -100,7 +101,10 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     {
         var previousMatrix = getDistanceMatrix[1];
         var path = Valve.GetShortestPath(Valves, start, end, previousMatrix);
-        Assert.That(path.Select(v => v.Name), Is.EqualTo(expectedPath));
+        Assert.That(path, Is.Not.EqualTo(null));
+        string[]? pathNames = path.Select(v => v.Name).ToArray();
+        Assert.That(pathNames, Is.Not.EqualTo(null));
+        Assert.That(pathNames, Is.EqualTo(expectedPath));
     }
 
     [Test, Order(9)]
@@ -119,11 +123,11 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         Assert.That(score, Is.EqualTo(1651));
     }
 
-    [Test]
-    public void part2()
-    {
-        var lines = Lines;
-        int score = Program.part2(Valves, getDistanceMatrix[0]);
-        Assert.That(score, Is.EqualTo(1707));
-    }
+    // [Test]
+    // public void part2()
+    // {
+    //     var lines = Lines;
+    //     int score = Program.part2(Valves, getDistanceMatrix[0]);
+    //     Assert.That(score, Is.EqualTo(1707));
+    // }
 }

@@ -169,6 +169,10 @@ public class Program
 
         // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
         // todo 2 queue's? 1 voor de olifant en 1 voor mij? want we hebben niet altijd dezelfde tijd over.
+
+        //1 queue, 2 loc, 2 time, 1 opened, 1 flow
+        // cross product van de open vlave opties aan queue toeveogedn. 
+
         Queue<(Valve valve,
             int minutesRemaining,
             int totalFlow,
