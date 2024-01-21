@@ -138,6 +138,7 @@ public class Program
 
     public static int part2(Dictionary<string[],int> maxFlows, Dictionary<string,Valve> Valves, int[,] distanceMatrix){
         // vind de keys zonder overlappende kleppen en welk paar de meeste flow heeft gehad
+        // dit duur te lang, hoe te optimaliseren?
 
         // disjoint key pairs in maxFlows (key x, key y, sum of totalFlow)
         var disjointKeyPairs = maxFlows.Keys.SelectMany((x, i) => maxFlows.Keys.Skip(i + 1),
