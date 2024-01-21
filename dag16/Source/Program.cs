@@ -21,9 +21,10 @@ public class Program
 
         // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
         Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
+        Dictionary<string[],int> maxPaths = new Dictionary<string[],int>();
         
-        Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix, maxFlows));
-        Console.WriteLine("Total score part 2: {0}",part2(maxFlows, valves, distanceMatrix));
+        Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix, maxFlows, maxPaths));
+        Console.WriteLine("Total score part 2: {0}",part2(maxFlows, valves, distanceMatrix, maxPaths));
 
 
         // wait for input before exiting
@@ -109,7 +110,7 @@ public class Program
         return new List<int[,]>{distanceMatrix, previousMatrix};
     }
 
-    public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix, Dictionary<string[],int> maxFlows)
+    public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix, Dictionary<string[],int> maxFlows, Dictionary<string[],int> maxPaths)
     {
         // Learned about Queues in: https://www.reddit.com/r/adventofcode/comments/zo21au/comment/j0nz8df/
         // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
@@ -128,7 +129,7 @@ public class Program
         {
             var queueItem = queue.Dequeue();
 
-            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix);
+            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix, maxPaths);
         }
 
         int score = maxFlows.Values.Max();
@@ -136,16 +137,19 @@ public class Program
         return score;
     }
 
-    public static int part2(Dictionary<string[],int> maxFlows, Dictionary<string,Valve> Valves, int[,] distanceMatrix){
+    public static int part2(Dictionary<string[],int> maxFlows, Dictionary<string,Valve> Valves, int[,] distanceMatrix, Dictionary<string[],int> maxPaths){
         // vind de keys zonder overlappende kleppen en welk paar de meeste flow heeft gehad
         // dit duur te lang, hoe te optimaliseren?
 
-        // disjoint key pairs in maxFlows (key x, key y, sum of totalFlow)
-        var disjointKeyPairs = maxFlows.Keys.SelectMany((x, i) => maxFlows.Keys.Skip(i + 1),
-            (x, y) => new { x, y })
+        // get the max of all permutations.
+        
+        // disjoint key pairs in maxPaths
+        var disjointKeyPairs = maxPaths.Keys
+            .SelectMany((x, i) => maxPaths.Keys.Skip(i + 1),
+                (x, y) => new { x, y })
             .Where(pair => !pair.x.Intersect(pair.y).Any())
-            .Select(pair => new { pair.x, pair.y, maxFlow = maxFlows[pair.x] + maxFlows[pair.y] })
-            .OrderByDescending(pair => pair.maxFlow)
+            .Select(pair => (pair.x, pair.y))
+            .OrderByDescending(pair => maxPaths[pair.x] + maxPaths[pair.y])
             .First();
 
         int maxFlowx = Valve.getPressureReleasedFromPath(disjointKeyPairs.x, 26, distanceMatrix, Valves);
@@ -157,7 +161,7 @@ public class Program
         return maxFlow;
     }
 
-    public static int part2slow(Dictionary<string,Valve> valves, int[,] distanceMatrix)
+    public static int part2slow(Dictionary<string,Valve> valves, int[,] distanceMatrix, Dictionary<string[],int> maxPaths)
     {
         // werkte alleen op de demo data. Was te langzaam voor de echte data.
 
@@ -173,7 +177,7 @@ public class Program
         {
             var queueItem = queue.Dequeue();
 
-            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix);
+            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix,maxPaths);
         }
 
         int score = maxFlows.Values.Max();

@@ -15,7 +15,7 @@ public class State{
         OpenedValves = openedValves;
     }
 
-    public static void ProcessState(State state, Queue<State> queue, Dictionary<string[],int> maxFlow, Dictionary<string,Valve> valves, int[,] distanceMatrix) {
+    public static void ProcessState(State state, Queue<State> queue, Dictionary<string[],int> maxFlow, Dictionary<string,Valve> valves, int[,] distanceMatrix, Dictionary<string[],int> maxPaths) {
         
         List<List<Valve>> openableValves = new();
         for (int i = 0; i < state.ValveOperators.Count; i++)
@@ -60,6 +60,10 @@ public class State{
             
             // sla op welke kleppen er open zijn gegaan en hoeveel flow er maximaal is geweest
             maxFlow.Add(valvesOpened, totalFlow);
+
+            // safe ordered list of opened valves
+            string[] key = valvesOpened.OrderBy(v => v).ToArray();
+            if (!maxPaths.TryGetValue(key, out int value) || value < totalFlow) maxPaths.Add(key, totalFlow);
         }
     }
 

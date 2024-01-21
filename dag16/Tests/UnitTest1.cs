@@ -20,6 +20,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     public static List<int[,]> getDistanceMatrix = Program.GetDistanceMatrix(Valves);    
 
     public static Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
+    public static Dictionary<string[],int> maxPaths = new Dictionary<string[],int>();
 
     [Test, Order(1)]
     public void TestParser()
@@ -120,7 +121,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     [Test, Order(10)]
     public void part1()
     {
-        int score = Program.part1(Valves, getDistanceMatrix[0], maxFlows);
+        int score = Program.part1(Valves, getDistanceMatrix[0], maxFlows, maxPaths);
         Assert.That(score, Is.EqualTo(1651));
     }
 
@@ -137,7 +138,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     [Test]
     public void part2()
     {
-        int score = Program.part2(maxFlows, Valves, getDistanceMatrix[0]);
+        int score = Program.part2(maxFlows, Valves, getDistanceMatrix[0], maxPaths);
         Assert.That(score, Is.EqualTo(1707));
     }
 }
