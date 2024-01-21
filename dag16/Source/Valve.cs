@@ -92,4 +92,20 @@ public class Valve
         MaxPressureReleased = FlowRate * minutesRemaining;
     }
 
+    public static int getPressureReleasedFromPath(string[] path, int minutesRemaining, int[,] distanceMatrix, Dictionary<string,Valve> valves)
+    {
+        int pressureReleased = 0;
+        int currentValve = 0;
+        foreach (var valveName in path)
+        {
+            Valve valve = valves[valveName];
+            minutesRemaining -= distanceMatrix[valve.Index, currentValve] + 1;
+            valve.getMaxPressureReleased(minutesRemaining);
+            if (minutesRemaining < 0) break;
+            pressureReleased += valve.MaxPressureReleased;
+            currentValve = valve.Index;
+        }
+        return pressureReleased;
+    }
+
 }

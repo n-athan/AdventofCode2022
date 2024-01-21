@@ -18,9 +18,12 @@ public class Program
         List<int[,]> getDistanceMatrix = GetDistanceMatrix(valves);
         int[,] distanceMatrix = getDistanceMatrix[0];
         int[,] previousMatrix = getDistanceMatrix[1];
+
+        // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
+        Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
         
-        Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix));
-        // Console.WriteLine("Total score part 2: {0}",part2());
+        Console.WriteLine("Total score part 1: {0}",part1(valves, distanceMatrix, maxFlows));
+        Console.WriteLine("Total score part 2: {0}",part2(maxFlows, valves, distanceMatrix));
 
 
         // wait for input before exiting
@@ -106,26 +109,16 @@ public class Program
         return new List<int[,]>{distanceMatrix, previousMatrix};
     }
 
-    public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix)
+    public static int part1(Dictionary<string,Valve> valves, int[,] distanceMatrix, Dictionary<string[],int> maxFlows)
     {
-        int minutesRemaining = 30;
-        Valve current = valves["AA"];
-
         // Learned about Queues in: https://www.reddit.com/r/adventofcode/comments/zo21au/comment/j0nz8df/
         // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
-        Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)> queue = new Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)>();
-        
-        // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
-        Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
+        Queue<State> queue = new();
 
-        // begin bij klep AA
-        queue.Enqueue((current,minutesRemaining,0,new string[]{}));
+        // begin bij klep AA, met 1 operator (de mens)
+        List<(Valve valve, int timeLeft)> valveOperators = new() { (valves["AA"], 30) };
+        State state = new(valveOperators, 0, Array.Empty<string>());
+        queue.Enqueue(state);
         
         // kijk naar alle kleppen die open kunnen, zet ze in de queue. 
         // ga dan de queue af en kijk of er nog meer kleppen open kunnen (tijd genoeg).
@@ -135,26 +128,7 @@ public class Program
         {
             var queueItem = queue.Dequeue();
 
-            List<Valve> openableValves = Valve.getOpenableValves(valves, queueItem.valve, queueItem.minutesRemaining, distanceMatrix, queueItem.valvesOpened);
-
-            foreach (var valve in openableValves)
-            {
-                // hoeveel tijd is er nog over als we naar deze klep gaan
-                int time = queueItem.minutesRemaining - (distanceMatrix[queueItem.valve.Index, valve.Index] +1);
-
-                // hoeveel flow is er maximaal is als we naar deze klep gaan
-                valve.getMaxPressureReleased(time);
-                int totalFlow = queueItem.totalFlow + valve.MaxPressureReleased;
-
-                // voeg klep toe aan de lijst van kleppen die open zijn gegaan
-                string[] valvesOpened = queueItem.valvesOpened.Append(valve.Name).ToArray();
-
-                // zet de klep in de queue, om te kijken of hierna nog meer kleppen open kunnen
-                queue.Enqueue((valve, time, totalFlow, valvesOpened));
-                
-                // sla op welke kleppen er open zijn gegaan en hoeveel flow er maximaal is geweest
-                maxFlows.Add(valvesOpened, totalFlow);
-            }
+            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix);
         }
 
         int score = maxFlows.Values.Max();
@@ -162,55 +136,53 @@ public class Program
         return score;
     }
 
-    public static int part2(Dictionary<string,Valve> valves, int[,] distanceMatrix)
+    public static int part2(Dictionary<string[],int> maxFlows, Dictionary<string,Valve> Valves, int[,] distanceMatrix){
+        // vind de keys zonder overlappende kleppen en welk paar de meeste flow heeft gehad
+
+        // disjoint key pairs in maxFlows (key x, key y, sum of totalFlow)
+        var disjointKeyPairs = maxFlows.Keys.SelectMany((x, i) => maxFlows.Keys.Skip(i + 1),
+            (x, y) => new { x, y })
+            .Where(pair => !pair.x.Intersect(pair.y).Any())
+            .Select(pair => new { pair.x, pair.y, maxFlow = maxFlows[pair.x] + maxFlows[pair.y] })
+            .OrderByDescending(pair => pair.maxFlow)
+            .First();
+
+        int maxFlowx = Valve.getPressureReleasedFromPath(disjointKeyPairs.x, 26, distanceMatrix, Valves);
+        int maxFlowy = Valve.getPressureReleasedFromPath(disjointKeyPairs.y, 26, distanceMatrix, Valves);
+        int maxFlow = maxFlowx + maxFlowy;
+
+        
+        // Console.WriteLine(" Max Flow Key: {0}",string.Join(", ",maxFlowPerPair.Where(pair => pair.maxFlow == maxFlow).Select(pair => string.Join(", ",pair.pair.x.Concat(pair.pair.y)))));
+        return maxFlow;
+    }
+
+    public static int part2slow(Dictionary<string,Valve> valves, int[,] distanceMatrix)
     {
-        int minutesRemaining = 26;
-        Valve current = valves["AA"];
+        // werkte alleen op de demo data. Was te langzaam voor de echte data.
 
-        // elk queueitem is een mogelijke optie op een bepaald moment. We lopen daarmee alle redelijke paden af.
-        // todo 2 queue's? 1 voor de olifant en 1 voor mij? want we hebben niet altijd dezelfde tijd over.
-
-        //1 queue, 2 loc, 2 time, 1 opened, 1 flow
-        // cross product van de open vlave opties aan queue toeveogedn. 
-
-        Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)> queueMe = new Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)>();
-        
-        Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)> queueElephant = new Queue<(Valve valve,
-            int minutesRemaining,
-            int totalFlow,
-            string[] valvesOpened)>();
-        
-        // sla op in welke volgorde de kleppen open zijn gegaan en hoeveel flow er maximaal is geweest
+        Queue<State> queue = new();
         Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
 
-        // begin bij klep AA
-        queueMe.Enqueue((current, minutesRemaining, 0, new string[]{}));
-        queueElephant.Enqueue((current, minutesRemaining, 0, new string[]{}));
-
-        // kijk naar alle kleppen die open kunnen, zet ze in de queue. 
-        // ga dan de queue af en kijk of er nog meer kleppen open kunnen (tijd genoeg).
-        // sla de kleppen op die open zijn gegaan en de totale flow die er is geweest.
-        // aan het einde kijken welke volgorde het meest efficient is geweest.
-
+        // begin bij klep AA, met 2 operators (de mens en de olifant)
+        List<(Valve valve, int timeLeft)> valveOperators = new() { (valves["AA"], 26), (valves["AA"], 26) };
+        State state = new(valveOperators, 0, Array.Empty<string>());
+        queue.Enqueue(state);
         
-        // haal uit maxFlows alle keys met duplicaten
-        // maxFlows = maxFlows.Select(v => if(v.Key.Distinct().Count() == v.Key.Count()){ return v}).ToDictionary(v => v.Key, v => v.Value
-        maxFlows = maxFlows.Where(v => v.Key.Distinct().Count() == v.Key.Count()).ToDictionary(v => v.Key, v => v.Value);
+        while (queue.Count > 0)
+        {
+            var queueItem = queue.Dequeue();
+
+            State.ProcessState(queueItem,queue,maxFlows,valves,distanceMatrix);
+        }
 
         int score = maxFlows.Values.Max();
-        Console.WriteLine(" Max Flow Key: {0}",string.Join(", ",maxFlows.Where(v => v.Value == score).Select(v => string.Join(", ",v.Key))));
+        var options = maxFlows.Where(v => v.Value == score);
+
+        foreach (var maxFlow in options)
+        {
+            Console.WriteLine(" Max Flow Key: {0}",string.Join(", ",maxFlow.Key));
+        }
         return score;
     }  
-
-
 }
 

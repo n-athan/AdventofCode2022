@@ -19,6 +19,8 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
 
     public static List<int[,]> getDistanceMatrix = Program.GetDistanceMatrix(Valves);    
 
+    public static Dictionary<string[],int> maxFlows = new Dictionary<string[],int>();
+
     [Test, Order(1)]
     public void TestParser()
     {
@@ -118,16 +120,24 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
     [Test, Order(10)]
     public void part1()
     {
-        var lines = Lines;
-        int score = Program.part1(Valves, getDistanceMatrix[0]);
+        int score = Program.part1(Valves, getDistanceMatrix[0], maxFlows);
         Assert.That(score, Is.EqualTo(1651));
     }
 
-    // [Test]
-    // public void part2()
-    // {
-    //     var lines = Lines;
-    //     int score = Program.part2(Valves, getDistanceMatrix[0]);
-    //     Assert.That(score, Is.EqualTo(1707));
-    // }
+    [Test, Order(11)]
+    [TestCase(new string[] {"AA"}, 30, 0)]
+    [TestCase(new string[] {"BB"}, 30, 364)]
+    [TestCase(new string[] {"DD", "BB", "JJ", "HH", "EE", "CC"},30, 1651)]
+    public void TestGetPressureReleasedFromPath(string[] path, int minutesRemaining, int expectedPressureReleased)
+    {
+        int pressureReleased = Valve.getPressureReleasedFromPath(path, minutesRemaining, getDistanceMatrix[0], Valves);
+        Assert.That(pressureReleased, Is.EqualTo(expectedPressureReleased));
+    }
+
+    [Test]
+    public void part2()
+    {
+        int score = Program.part2(maxFlows, Valves, getDistanceMatrix[0]);
+        Assert.That(score, Is.EqualTo(1707));
+    }
 }
